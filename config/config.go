@@ -8,6 +8,7 @@ import (
 
 type Configuration struct {
 	MySql *MySqlConfiguration
+	Auth  *AuthenticationConfig
 }
 
 type MySqlConfiguration struct {
@@ -16,6 +17,12 @@ type MySqlConfiguration struct {
 	Password string
 	Host     string
 	Port     int
+}
+
+type AuthenticationConfig struct {
+	Path               string
+	PrivateKeyFileName string `mapstructure:"private_key_file_name"`
+	PublicKeyFileName  string `mapstructure:"public_key_file_name"`
 }
 
 func Initialize() *Configuration {

@@ -4,3 +4,8 @@ host = "localhost"
 password = ""
 port = "3306"
 username = "root"
+
+[auth]
+path = "secrets"
+private_key_file_name = "tweeter-private.pem"
+public_key_file_name = "tweeter-public.pem"
