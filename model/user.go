@@ -7,6 +7,7 @@ import (
 	"github.com/anujc4/tweeter_api/internal/app"
 	"github.com/anujc4/tweeter_api/request"
 	"github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -95,4 +96,13 @@ func (appModel AppModel) GetUserByID(userID string) (User, *app.Error) {
 		return User{}, app.NewError(tx.Error).SetCode(http.StatusNotFound)
 	}
 	return user, nil
+}
+
+// DeleteUser deletes user form database given an ID
+func (appModel AppModel) DeleteUser(userID string) *app.Error {
+	tx := appModel.DB.Delete(&User{}, userID)
+	if tx.RowsAffected == 0 {
+		return app.NewError(errors.New("Object does not exist")).SetCode(404)
+	}
+	return nil
 }
