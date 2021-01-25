@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// User represents a user object in our app
 type User struct {
 	ID        uint `gorm:"primarykey"`
 	FirstName string
@@ -81,4 +82,14 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 	}
 
 	return &users, nil
+}
+
+// GetUserByID returns a user given a userID
+func (appModel AppModel) GetUserByID(userID string) (User, *app.Error) {
+	var user User
+	tx := appModel.DB.First(&user, userID)
+	if tx.Error != nil {
+		return User{}, app.NewError(tx.Error).SetCode(http.StatusNotFound)
+	}
+	return user, nil
 }
