@@ -41,7 +41,7 @@ func setUpViper() {
 	viper.SetConfigType("toml")
 
 	// Set the path to look for the configurations file
-	viper.AddConfigPath("./config")
+	viper.AddConfigPath("../../config")
 
 	// Read the config file
 	err := viper.ReadInConfig()
