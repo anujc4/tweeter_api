@@ -1,6 +1,6 @@
 [mysql]
 database = "tweeter_db"
 host = "localhost"
-password = ""
+password = "Himanshu@123"
 port = "3306"
-username = "root"
+username = "himanshu"
