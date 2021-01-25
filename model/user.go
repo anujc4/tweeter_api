@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/anujc4/tweeter_api/internal/app"
 	"github.com/anujc4/tweeter_api/request"
 	"github.com/go-sql-driver/mysql"
@@ -23,11 +25,16 @@ type User struct {
 type Users []*User
 
 func (appModel *AppModel) CreateUser(request *request.CreateUserRequest) (*User, *app.Error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, app.NewError(err)
+	}
+
 	user := User{
 		FirstName: request.FirstName,
 		LastName:  request.LastName,
 		Email:     request.Email,
-		Password:  request.Password,
+		Password:  string(hashedPassword),
 	}
 	result := appModel.DB.Create(&user)
 
@@ -44,6 +51,20 @@ func (appModel *AppModel) CreateUser(request *request.CreateUserRequest) (*User,
 		}
 		return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
 	}
+	return &user, nil
+}
+
+func (appModel *AppModel) VerifyUserCredential(request *request.LoginRequest) (*User, *app.Error) {
+	var user User
+
+	result := appModel.DB.
+		Where("email = ?", request.Email).
+		First(&user)
+
+	if result.Error != nil {
+		return nil, app.NewError(result.Error)
+	}
+
 	return &user, nil
 }
 
