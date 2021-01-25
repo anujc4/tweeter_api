@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang-migrate/migrate/v4 v4.14.1
@@ -12,6 +13,7 @@ require (
 	github.com/gorilla/schema v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.7.1
+	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/gorm v1.20.11
 )
