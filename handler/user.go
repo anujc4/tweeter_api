@@ -16,7 +16,7 @@ import (
 // meta-data about structs, and an instance can be shared safely.
 var decoder = schema.NewDecoder()
 
-//CreateUser creates a new user
+//CreateUser is endpoint to create a user -> /user [POST]
 func (env *HttpApp) CreateUser(w http.ResponseWriter, req *http.Request) {
 	var request request.CreateUserRequest
 	decoder := json.NewDecoder(req.Body)
@@ -39,7 +39,7 @@ func (env *HttpApp) CreateUser(w http.ResponseWriter, req *http.Request) {
 	app.RenderJSONwithStatus(w, http.StatusCreated, response.TransformUserResponse(*user))
 }
 
-// GetUsers returns all users
+// GetUsers is api endpoint to get all users -> /users [GET]
 func (env *HttpApp) GetUsers(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
 		app.RenderErrorJSON(w, app.NewParseFormError(err))
@@ -62,7 +62,7 @@ func (env *HttpApp) GetUsers(w http.ResponseWriter, req *http.Request) {
 	app.RenderJSON(w, resp)
 }
 
-// GetUserByID returns a user by given user id
+// GetUserByID is api endpoint to get user by id -> /user/{user_id} [GET]
 func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	userID := vars["user_id"]
@@ -77,13 +77,13 @@ func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 	app.RenderJSON(w, resp)
 }
 
-// UpdateUser updates a user details in db
+// UpdateUser is api endpoint to update a user -> /user/{user_id} [PUT]
 func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 	// TODO: Implement this
 	app.RenderJSON(w, "Not yet implemented!")
 }
 
-//DeleteUser delets a user from db
+//DeleteUser is apu endpoint to delete a user -> /user/{user_id} [DELETE]
 func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
 	// TODO: Implement this
 	app.RenderJSON(w, "Not yet implemented!")
