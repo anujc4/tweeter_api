@@ -29,7 +29,6 @@ func NewMiddlewareApp(env *env.Env) *middlewareApp {
 
 func (mw *middlewareApp) Authentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Print("YAHAN AAYA")
 		authenticationHeader := r.Header.Get("Authorization")
 		if authenticationHeader == "" {
 			e := errors.New("missing authorization token")
