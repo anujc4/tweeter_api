@@ -21,8 +21,10 @@ type User struct {
 	UpdatedAt time.Time
 }
 
+//Users alias list of 'User' type
 type Users []*User
 
+//CreateUser creates user object and adds it to database
 func (appModel *AppModel) CreateUser(request *request.CreateUserRequest) (*User, *app.Error) {
 	user := User{
 		FirstName: request.FirstName,
@@ -48,6 +50,7 @@ func (appModel *AppModel) CreateUser(request *request.CreateUserRequest) (*User,
 	return &user, nil
 }
 
+// GetUsers returns all users from database (paginated)
 func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *app.Error) {
 	var users Users
 	var where *gorm.DB = appModel.DB
