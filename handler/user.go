@@ -83,8 +83,16 @@ func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 	app.RenderJSON(w, "Not yet implemented!")
 }
 
-//DeleteUser is apu endpoint to delete a user -> /user/{user_id} [DELETE]
+//DeleteUser is api endpoint to delete a user -> /user/{user_id} [DELETE]
 func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	vars := mux.Vars(req)
+	userID := vars["user_id"]
+
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	err := appModel.DeleteUser(userID)
+	if err != nil {
+		app.RenderErrorJSON(w, err)
+		return
+	}
+	app.RenderJSONwithStatus(w, 204, "")
 }
