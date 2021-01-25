@@ -1,13 +1,21 @@
 package handler
 
-import "gorm.io/gorm"
+import (
+	"crypto/rsa"
+
+	"github.com/anujc4/tweeter_api/internal/env"
+	"gorm.io/gorm"
+)
 
 type HttpApp struct {
-	DB *gorm.DB
+	DB         *gorm.DB
+	PrivateKey *rsa.PrivateKey
+	PublicKey  *rsa.PublicKey
 }
 
-func NewHttpApp(db *gorm.DB) *HttpApp {
+func NewHttpApp(env *env.Env) *HttpApp {
 	return &HttpApp{
-		DB: db,
+		DB:         env.DB,
+		PrivateKey: env.PrivateKey,
 	}
 }
