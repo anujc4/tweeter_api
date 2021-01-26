@@ -86,14 +86,14 @@ func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	vars := mux.Vars(req)
+	userID := vars["user_id"]
+	request.ID = userID
+
 	if err := request.ValidateUpdateUserRequest(); err != nil {
 		app.RenderErrorJSON(w, app.NewError(err))
 		return
 	}
-
-	vars := mux.Vars(req)
-	userID := vars["user_id"]
-	request.ID = userID
 
 	appModel := model.NewAppModel(req.Context(), env.DB)
 	user, err := appModel.UpdateUser(request)

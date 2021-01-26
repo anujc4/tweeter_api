@@ -41,6 +41,7 @@ type UpdateUserRequest struct {
 //ValidateUpdateUserRequest validates UpdateUserRequest object
 func (r UpdateUserRequest) ValidateUpdateUserRequest() error {
 	return validation.ValidateStruct(&r,
+		validation.Field(&r.ID, validation.Required),
 		validation.Field(&r.Email, is.Email),
 		validation.Field(&r.FirstName, validation.Length(3, 20)),
 		validation.Field(&r.LastName, validation.Length(3, 20)),
