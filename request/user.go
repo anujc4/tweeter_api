@@ -55,7 +55,8 @@ type UpdateUserRequest struct {
 //Password & User_ID is required to update/delete a user
 func (r UpdateUserRequest) UpdateUserRequestIDRequest() error {
 	return validation.ValidateStruct(&r,
-		validation.Field(&r.Email, validation.Required, validation.Match(regexp.MustCompile("[0-9]"))),
+		validation.Field(&r.ID, validation.Required, validation.Match(regexp.MustCompile("[0-9]"))),
+		validation.Field(&r.Email, is.Email),
 		validation.Field(&r.FirstName, validation.Length(3, 20)),
 		validation.Field(&r.LastName, validation.Length(3, 20)),
 		validation.Field(&r.Password, validation.Required, validation.Length(5, 50)),
