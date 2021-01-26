@@ -34,3 +34,9 @@ type GetUsersRequest struct {
 // 		validation.Field(&r.FirstName, validation.Required.When(r.Email == "").Error("Either phone or Email is required.")),
 // 	)
 // }
+
+type UpdateUserRequest struct {
+	FirstName string `json:"first_name,omitempty"`
+	LastName  string `json:"last_name,omitempty"`
+	Password  string `json:"password,omitempty"`
+}

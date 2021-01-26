@@ -82,3 +82,35 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 
 	return &users, nil
 }
+
+func (appModel *AppModel) GetUser(w map[string]interface{}) (*User, *app.Error) {
+	var user User
+	result := appModel.DB.Where(w).First(&user)
+	if result.Error != nil {
+		return nil, app.NewError(result.Error)
+	}
+
+	return &user, nil
+}
+
+func (appModel *AppModel) UpdateUser(id uint, update *request.UpdateUserRequest) (*User, *app.Error) {
+	user := User{
+		FirstName: update.FirstName,
+		LastName:  update.LastName,
+		Password:  update.Password,
+	}
+
+	// Passing a struct will work as GORM will only update non-zero fields
+	// https://gorm.io/docs/update.html#Updates-multiple-columns
+	result := appModel.DB.First(&user, id).Updates(user)
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return &user, nil
+}
+
+func (appModel *AppModel) DeleteUser(id uint) (int64, error) {
+	result := appModel.DB.Delete(&User{}, id)
+	return result.RowsAffected, result.Error
+}
