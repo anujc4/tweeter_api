@@ -5,6 +5,8 @@ import (
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
+import "regexp"
+
 type CreateUserRequest struct {
 	FirstName string `json:"first_name,omitempty"`
 	LastName  string `json:"last_name,omitempty"`
@@ -41,7 +43,8 @@ type GetUserByIDRequest struct{
 
 func (r GetUserByIDRequest) ValidateGetUserByIDRequest() error {
 	return validation.ValidateStruct(&r,
-		validation.Field(&r.Email, validation.Required, validation.Match(regexp.MustCompile("[0-9]"))),
+		validation.Field(&r.ID, validation.Required, validation.Match(regexp.MustCompile("[0-9]"))),
+	)
 }
 
 type UpdateUserRequest struct {
@@ -60,5 +63,6 @@ func (r UpdateUserRequest) UpdateUserRequestIDRequest() error {
 		validation.Field(&r.FirstName, validation.Length(3, 20)),
 		validation.Field(&r.LastName, validation.Length(3, 20)),
 		validation.Field(&r.Password, validation.Required, validation.Length(5, 50)),
+	)
 }
 
