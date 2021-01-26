@@ -72,35 +72,33 @@ func (env *HttpApp) GetTweetByID(w http.ResponseWriter, req *http.Request) {
 	app.RenderJSON(w, resp)
 }
 
-/*
 // UpdateTweet is api endpoint to update a tweet -> /tweet/{tweet_id} [PUT]
 func (env *HttpApp) UpdateTweet(w http.ResponseWriter, req *http.Request) {
-	var request request.UpdateUserRequest
+	var request request.UpdateTweetRequest
 	decoder := json.NewDecoder(req.Body)
 	if err := decoder.Decode(&request); err != nil {
 		app.RenderErrorJSON(w, app.NewError(err))
 		return
 	}
 
-	if err := request.ValidateUpdateUserRequest(); err != nil {
+	vars := mux.Vars(req)
+	tweetID := vars["tweet_id"]
+	request.ID = tweetID
+
+	if err := request.ValidateUpdateTweetRequest(); err != nil {
 		app.RenderErrorJSON(w, app.NewError(err))
 		return
 	}
 
-	vars := mux.Vars(req)
-	userID := vars["user_id"]
-	request.ID = userID
-
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	user, err := appModel.UpdateUser(request)
+	tweet, err := appModel.UpdateTweet(&request)
 	if err != nil {
 		app.RenderErrorJSON(w, err)
 		return
 	}
-	resp := response.TransformUserResponse(user)
+	resp := response.TransformTweetResponse(*tweet)
 	app.RenderJSON(w, resp)
 }
-*/
 
 //DeleteTweet is api endpoint to delete a tweet -> /user/{tweet_id} [DELETE]
 func (env *HttpApp) DeleteTweet(w http.ResponseWriter, req *http.Request) {

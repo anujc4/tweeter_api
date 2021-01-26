@@ -25,29 +25,16 @@ type GetTweetsRequest struct {
 	Content     string `schema:"content"`
 }
 
-/*
 //UpdateTweetRequest describes an update user request
 type UpdateTweetRequest struct {
-	ID        string
-	FirstName string `json:"first_name,omitempty"`
-	LastName  string `json:"last_name,omitempty"`
-	Email     string `json:"email,omitempty"`
+	ID      string
+	Content string `json:"content,omitempty"`
 }
 
 //ValidateUpdateTweetRequest validates UpdateUserRequest object
 func (r UpdateTweetRequest) ValidateUpdateTweetRequest() error {
 	return validation.ValidateStruct(&r,
-		validation.Field(&r.Email, is.Email),
-		validation.Field(&r.FirstName, validation.Length(3, 20)),
-		validation.Field(&r.LastName, validation.Length(3, 20)),
+		validation.Field(&r.Content, validation.Required, validation.Length(1, 100)),
+		validation.Field(&r.ID, validation.Required),
 	)
 }
-
-// eg. Validation if either phone no or email was required
-// func (r GetUsersRequest) ValidateGetUsersRequest() error {
-// 	return validation.ValidateStruct(&r,
-// 		validation.Field(&r.Email, validation.Required.When(r.FirstName == "").Error("Either phone or Email is required.")),
-// 		validation.Field(&r.FirstName, validation.Required.When(r.Email == "").Error("Either phone or Email is required.")),
-// 	)
-// }
-*/

@@ -42,6 +42,7 @@ func (appModel *AppModel) CreateTweet(request *request.CreateTweetRequest) (*Twe
 	// Hack to get this bloody thing working
 	// Default vlaue of uint in parent_tweet was giving referencial error cause
 	// tweet with 0 id does not exist
+	// also even if it did exist it would be a bug as i want null instead of 0
 	var unmarshledData map[string]interface{}
 	marshledData, _ := json.Marshal(request)
 	json.Unmarshal(marshledData, &unmarshledData)
@@ -114,4 +115,19 @@ func (appModel AppModel) DeleteTweet(tweetID *string) *app.Error {
 		return app.NewError(errors.New("Object does not exist")).SetCode(404)
 	}
 	return nil
+}
+
+//UpdateTweet updates tweet
+func (appModel AppModel) UpdateTweet(request *request.UpdateTweetRequest) (*Tweet, *app.Error) {
+	var tweet Tweet
+	tx := appModel.DB.Find(&tweet, request.ID).Updates(
+		Tweet{
+			Content: request.Content,
+		},
+	)
+
+	if tx.RowsAffected == 0 {
+		return nil, app.NewError(errors.New("Object does not exist")).SetCode(404)
+	}
+	return &tweet, nil
 }
