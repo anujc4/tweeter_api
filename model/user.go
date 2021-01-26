@@ -3,7 +3,6 @@ package model
 import (
 	"net/http"
 	"time"
-
 	"github.com/anujc4/tweeter_api/internal/app"
 	"github.com/anujc4/tweeter_api/request"
 	"github.com/go-sql-driver/mysql"
@@ -60,13 +59,19 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 
 	if request.Page == 0 {
 		page = 1
+	} else {
+		page = request.Page
 	}
 
 	switch {
 	case request.PageSize > 100:
 		pageSize = 100
 	case request.PageSize <= 0:
+	}
+	if request.PageSize <= 0 {
 		pageSize = 10
+	} else {
+		pageSize = request.PageSize
 	}
 
 	offset := (page - 1) * pageSize
@@ -81,4 +86,105 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 	}
 
 	return &users, nil
+}
+
+
+
+func(appModel *AppModel) GetUserByID(id int)(*User, *app.Error)  {
+	var users User
+	var where *gorm.DB = appModel.DB
+	if id != 0 {
+		where = appModel.DB.Where("id = ?", id)
+	}
+	 result := where.Find(&users)
+	 if users.FirstName == "" && users.LastName == "" && users.Email == "" {
+		 return nil, app.
+			 NewError(result.Error).
+			 SetMessage("not found").
+			 SetCode(http.StatusBadRequest)
+	 }
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+	return &users,nil
+}
+
+
+func (appModel *AppModel) UpdateUser(request *request.CreateUserRequest,id int) (*app.Error) {
+	var user1 User
+	user := User{
+		FirstName: request.FirstName,
+		LastName:  request.LastName,
+		Email:     request.Email,
+		Password:  request.Password,
+	}
+
+	var result *gorm.DB = appModel.DB.Model(&user)
+	if id != 0 {
+		result.Where("id = ?",id).First(&user1)
+    if result.Error != nil {
+      return app.
+				NewError(result.Error).
+				SetMessage("not found").
+				SetCode(http.StatusBadRequest)
+    }
+
+
+	if user.FirstName !="" {
+		result.Where("id = ?",id).Update("first_name", user.FirstName)
+		if result.Error != nil {
+			me, ok := result.Error.(*mysql.MySQLError)
+			if !ok {
+				return nil
+			}
+			if me.Number == 1062 {
+				return app.
+					NewError(result.Error).
+					SetMessage("Email " + request.Email + " is already taken").
+					SetCode(http.StatusBadRequest)
+			}
+			return nil
+		}
+}
+	if request.LastName !="" {
+			result.Where("id = ?",id).Update("last_name", user.LastName)
+
+}
+	if request.Email !="" {
+
+		result.Where("id = ?",id).Update("email", user.Email)
+	if result.Error != nil {
+		me, ok := result.Error.(*mysql.MySQLError)
+		if !ok {
+			return nil
+		}
+		if me.Number == 1062 {
+			return  app.
+				NewError(result.Error).
+				SetMessage("Email " + request.Email + " is already taken").
+				SetCode(http.StatusBadRequest)
+		}
+		return nil
+	}
+}
+}
+	return nil
+}
+
+
+
+
+func(appModel *AppModel) DeleteUser(id int)(*app.Error)  {
+	var users User
+	var where *gorm.DB = appModel.DB
+	if id != 0 {
+		where = appModel.DB.Delete(&users,id)
+	}
+	if where.Error != nil {
+		return app.
+			NewError(where.Error).
+			SetMessage("not found").
+			SetCode(http.StatusBadRequest)
+	}
+	return nil
 }

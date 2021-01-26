@@ -8,64 +8,63 @@ import (
 	"github.com/anujc4/tweeter_api/model"
 	"github.com/anujc4/tweeter_api/request"
 	"github.com/anujc4/tweeter_api/response"
-	"github.com/gorilla/schema"
+	// "github.com/gorilla/schema"
 	"github.com/gorilla/mux"
-
 
 )
 
-// Set a Decoder instance as a package global, because it caches
-// meta-data about structs, and an instance can be shared safely.
-var decoder = schema.NewDecoder()
+// var decoder = schema.NewDecoder()
 
-func (env *HttpApp) CreateUser(w http.ResponseWriter, req *http.Request) {
-	var request request.CreateUserRequest
+//create tweet
+
+func (env *HttpApp) CreateTweet(w http.ResponseWriter, req *http.Request) {
+	var request request.CreateTweetRequest
 	decoder := json.NewDecoder(req.Body)
 	if err := decoder.Decode(&request); err != nil {
 		app.RenderErrorJSON(w, app.NewError(err))
 		return
 	}
 
-	if err := request.ValidateCreateUserRequest(); err != nil {
+	if err := request.ValidateCreateTweetRequest(); err != nil {
 		app.RenderErrorJSON(w, app.NewError(err))
 		return
 	}
 
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	user, err := appModel.CreateUser(&request)
+	tweet, err := appModel.CreateTweet(&request)
 	if err != nil {
 		app.RenderErrorJSON(w, err)
 		return
 	}
-	app.RenderJSONwithStatus(w, http.StatusCreated, response.TransformUserResponse(*user))
+	app.RenderJSONwithStatus(w, http.StatusCreated, response.TransformTweetResponse(*tweet))
 }
 
-func (env *HttpApp) GetUsers(w http.ResponseWriter, req *http.Request) {
+func (env *HttpApp) GetTweets(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
 		app.RenderErrorJSON(w, app.NewParseFormError(err))
 		return
 	}
 
-	var request request.GetUsersRequest
+	var request request.GetTweetsRequest
 	if err := decoder.Decode(&request, req.Form); err != nil {
 		app.RenderErrorJSON(w, app.NewError(err).SetCode(http.StatusBadRequest))
 		return
 	}
 
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	users, err := appModel.GetUsers(&request)
+	tweets, err := appModel.GetTweets(&request)
 	if err != nil {
 		app.RenderErrorJSON(w, err)
 		return
 	}
-	resp := response.MapUsersResponse(*users, response.TransformUserResponse)
+	resp := response.MapTweetsResponse(*tweets, response.TransformTweetResponse)
 	app.RenderJSON(w, resp)
 }
 
-func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
+func (env *HttpApp) GetTweetByID(w http.ResponseWriter, req *http.Request) {
 	// TODO: Implement this
 	params := mux.Vars(req)
-	id1:= params["user_id"]
+	id1:= params["tweet_id"]
 	id, err1 := strconv.Atoi(id1)
     if err1 != nil {
       app.RenderErrorJSON(w, app.NewParseFormError(err1))
@@ -76,20 +75,20 @@ func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	users, err := appModel.GetUserByID(id)
+	tweet, err := appModel.GetTweetByID(id)
 	if err != nil {
 		app.RenderErrorJSON(w, err)
 		return
 	}
-	resp := response.TransformUserResponse(*users)
+	resp := response.TransformTweetResponse(*tweet)
 	app.RenderJSON(w, resp)
 
 	// app.RenderJSON(w, "Not yet implemented!")
 }
 
-func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
+func (env *HttpApp) UpdateTweet(w http.ResponseWriter, req *http.Request) {
 	// TODO: Implement this
-	var request request.CreateUserRequest
+	var request request.CreateTweetRequest
 	decoder := json.NewDecoder(req.Body)
 	if err := decoder.Decode(&request); err != nil {
 		app.RenderErrorJSON(w, app.NewError(err))
@@ -97,18 +96,20 @@ func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 	}
 
 	params := mux.Vars(req)
-	id1:= params["user_id"]
+	id1:= params["tweet_id"]
 	id, err1 := strconv.Atoi(id1)
 		if err1 != nil {
-				app.RenderErrorJSON(w, app.NewParseFormError(err1))
+				app.RenderErrorJSON(w, app.NewError(err1))
 		}
-		if err := request.ValidateCreateUserRequest(); err != nil {
-	 		app.RenderErrorJSON(w, app.NewError(err))
-	 		return
-	 	}
+    if err := request.ValidateCreateTweetRequest(); err != nil {
+      app.RenderErrorJSON(w, app.NewError(err))
+      return
+    }
+
+
 
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	err := appModel.UpdateUser(&request,id)
+	err := appModel.UpdateTweet(&request,id)
 	if err != nil {
 		app.RenderErrorJSON(w, err)
 		return
@@ -117,20 +118,20 @@ func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 	// app.RenderJSON(w, "Not yet implemented!")
 }
 
-func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
+func (env *HttpApp) DeleteTweet(w http.ResponseWriter, req *http.Request) {
 	// TODO: Implement this
 	params := mux.Vars(req)
-	id1:= params["user_id"]
+	id1:= params["tweet_id"]
 	id, err1 := strconv.Atoi(id1)
 		if err1 != nil {
-			app.RenderErrorJSON(w, app.NewParseFormError(err1))
+					app.RenderErrorJSON(w, app.NewParseFormError(err1))
 		}
 	if err := req.ParseForm(); err != nil {
 		app.RenderErrorJSON(w, app.NewParseFormError(err))
 		return
 	}
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	err := appModel.DeleteUser(id)
+	err := appModel.DeleteTweet(id)
 	if err != nil {
 		app.RenderErrorJSON(w, err)
 		return
