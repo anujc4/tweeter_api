@@ -30,10 +30,10 @@ func routeHandler(env *env.Env) {
 	router.HandleFunc("/login", h.Login).Methods("POST")
 
 	// Users API
-	apiV1.HandleFunc("/users", handler.GetUsers).Methods("GET")
-	apiV1.HandleFunc("/user/{user_id}", handler.GetUserByID).Methods("GET")
-	apiV1.HandleFunc("/user/{user_id}", handler.UpdateUser).Methods("PUT")
-	apiV1.HandleFunc("/user/{user_id}", handler.DeleteUser).Methods("DELETE")
+	apiV1.HandleFunc("/users", h.GetUsers).Methods("GET")
+	apiV1.HandleFunc("/user/{user_id}", h.GetUserByID).Methods("GET")
+	apiV1.HandleFunc("/user/{user_id}", h.UpdateUser).Methods("PUT")
+	apiV1.HandleFunc("/user/{user_id}", h.DeleteUser).Methods("DELETE")
 
 	// Tweets
 	// TODO: Implement the h
