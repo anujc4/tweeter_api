@@ -79,8 +79,30 @@ func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 
 // UpdateUser is api endpoint to update a user -> /user/{user_id} [PUT]
 func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	var request request.UpdateUserRequest
+	decoder := json.NewDecoder(req.Body)
+	if err := decoder.Decode(&request); err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
+
+	if err := request.ValidateUpdateUserRequest(); err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
+
+	vars := mux.Vars(req)
+	userID := vars["user_id"]
+	request.ID = userID
+
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	user, err := appModel.UpdateUser(request)
+	if err != nil {
+		app.RenderErrorJSON(w, err)
+		return
+	}
+	resp := response.TransformUserResponse(user)
+	app.RenderJSON(w, resp)
 }
 
 //DeleteUser is api endpoint to delete a user -> /user/{user_id} [DELETE]
