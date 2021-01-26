@@ -26,26 +26,26 @@ func routeHandler(handler *handler.HttpApp) {
 	apiV1.HandleFunc("/users", handler.GetUsers).Methods("GET")
 	apiV1.HandleFunc("/user/{user_id}", handler.GetUserByID).Methods("GET")
 	apiV1.HandleFunc("/user/{user_id}", handler.UpdateUser).Methods("PUT")
-	apiV1.HandleFunc("/user/{user_id}", handler.UpdateUser).Methods("DELETE")
+	apiV1.HandleFunc("/user/{user_id}", handler.DeleteUser).Methods("DELETE")
 
 	// Tweets
 	// TODO: Implement the handler
-	// apiV1.HandleFunc("/tweet", handler.CreateTweet).Methods("POST")
-	// apiV1.HandleFunc("/tweets", handler.GetTweets).Methods("GET")
-	// apiV1.HandleFunc("/tweet/{tweet_id}", handler.GetTweetByID).Methods("GET")
-	// apiV1.HandleFunc("/tweet/{tweet_id}", handler.UpdateTweet).Methods("PUT")
-	// apiV1.HandleFunc("/tweet/{tweet_id}", handler.UpdateTweet).Methods("DELETE")
+	apiV1.HandleFunc("/tweet", handler.CreateTweet).Methods("POST")
+	apiV1.HandleFunc("/tweets", handler.GetTweets).Methods("GET")
+	apiV1.HandleFunc("/tweet/{tweet_id}", handler.GetTweetByID).Methods("GET")
+	apiV1.HandleFunc("/tweet/{tweet_id}", handler.UpdateTweet).Methods("PUT")
+	apiV1.HandleFunc("/tweet/{tweet_id}", handler.DeleteTweet).Methods("DELETE")
 
 	// Start the server
 	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
-	log.Fatal(http.ListenAndServe(":3000", handlers.RecoveryHandler()(loggedRouter)))
+	log.Fatal(http.ListenAndServe(":4000", handlers.RecoveryHandler()(loggedRouter)))
 }
 
 func main() {
 	env := env.Init()
 	h := handler.NewHttpApp(env.DB)
 
-	fmt.Println("Starting Tweeter API on port 3000...")
+	fmt.Println("Starting Tweeter API on port 4000...")
 
 	routeHandler(h)
 }

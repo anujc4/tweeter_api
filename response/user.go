@@ -20,6 +20,7 @@ func TransformUserResponse(user model.User) UserResponse {
 		ID:        user.ID,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
+		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}

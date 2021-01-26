@@ -27,7 +27,7 @@ func Initialize() *Configuration {
 	if err != nil {
 		fmt.Printf("unable to decode configuration, %v", err)
 	}
-	// fmt.Print(configuration)
+
 	return configuration
 }
 

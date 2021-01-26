@@ -3,11 +3,13 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/anujc4/tweeter_api/internal/app"
 	"github.com/anujc4/tweeter_api/model"
 	"github.com/anujc4/tweeter_api/request"
 	"github.com/anujc4/tweeter_api/response"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 )
 
@@ -60,16 +62,86 @@ func (env *HttpApp) GetUsers(w http.ResponseWriter, req *http.Request) {
 }
 
 func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	// TODO: Implement thismake
+	params := mux.Vars(req)
+	idstring := params["user_id"]
+
+	id, err := strconv.Atoi(idstring)
+
+	if err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
+
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	user, errs := appModel.GetUserById(id)
+
+	if err != nil {
+		app.RenderErrorJSON(w, errs)
+		return
+	}
+
+	app.RenderJSONwithStatus(w, http.StatusCreated, response.TransformUserResponse(*user))
+
 }
 
 func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	params := mux.Vars(req)
+	idstring := params["user_id"]
+
+	id, err := strconv.Atoi(idstring)
+
+	if err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
+
+	if err := req.ParseForm(); err != nil {
+		{
+			app.RenderErrorJSON(w, app.NewParseFormError(err).SetCode(http.StatusBadRequest))
+			return
+		}
+	}
+
+	var request request.CreateUserRequest
+	decoder := json.NewDecoder(req.Body)
+	if err := decoder.Decode(&request); err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
+
+	appModel := model.NewAppModel(req.Context(), env.DB)
+
+	user, errs := appModel.UpdateUserById(&request, id)
+
+	if errs != nil {
+		app.RenderErrorJSON(w, errs)
+		return
+	}
+
+	app.RenderJSONwithStatus(w, http.StatusCreated, response.TransformUserResponse(*user))
+
 }
 
 func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	params := mux.Vars(req)
+	idstring := params["user_id"]
+
+	id, err := strconv.Atoi(idstring)
+
+	if err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
+
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	errs := appModel.DeleteUserById(id)
+
+	if err != nil {
+		app.RenderErrorJSON(w, errs)
+		return
+	}
+
+	app.RenderJSONwithStatus(w, http.StatusCreated, "User deleted Successfully")
+
 }

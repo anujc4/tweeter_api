@@ -57,9 +57,15 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 	} else if request.FirstName != "" {
 		where = appModel.DB.Where("first_name LIKE ?", "%"+request.FirstName+"%")
 	}
+	page = 1
+	pageSize = 10
 
-	if request.Page == 0 {
-		page = 1
+	if request.Page != 0 {
+		page = request.Page
+	}
+
+	if request.PageSize != 0 {
+		pageSize = request.PageSize
 	}
 
 	switch {
@@ -81,4 +87,59 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 	}
 
 	return &users, nil
+}
+
+func (appModel *AppModel) GetUserById(id int) (*User, *app.Error) {
+	var user User
+	var where *gorm.DB = appModel.DB
+
+	where = appModel.DB.Where("ID = ?", id)
+
+	result := where.Find(&user)
+
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return &user, nil
+}
+
+func (appModel *AppModel) UpdateUserById(request *request.CreateUserRequest, id int) (*User, *app.Error) {
+	var user User
+	var where *gorm.DB = appModel.DB
+
+	result := where.First(&user, id)
+
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	if request.FirstName != "" {
+		user.FirstName = request.FirstName
+	}
+	if request.LastName != "" {
+		user.LastName = request.LastName
+	}
+	if request.Email != "" {
+		user.Email = request.Email
+	}
+
+	result = where.Save(&user)
+
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return &user, nil
+}
+
+func (appModel *AppModel) DeleteUserById(id int) *app.Error {
+
+	result := appModel.DB.Delete(&User{}, id)
+
+	if result.Error != nil {
+		return app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return nil
 }
