@@ -57,9 +57,15 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 	} else if request.FirstName != "" {
 		where = appModel.DB.Where("first_name LIKE ?", "%"+request.FirstName+"%")
 	}
+	page = 1
+	pageSize = 10
 
-	if request.Page == 0 {
-		page = 1
+	if request.Page != 0 {
+		page = request.Page
+	}
+
+	if request.PageSize != 0 {
+		pageSize = request.PageSize
 	}
 
 	switch {

@@ -50,9 +50,15 @@ func (appModel *AppModel) GetTweets(request *request.GetTweetsRequest) (*Tweets,
 	} else if request.Content != "" {
 		where = appModel.DB.Where("content LIKE ?", "%"+request.Content+"%")
 	}
+	page = 1
+	pageSize = 10
 
-	if request.Page == 0 {
-		page = 1
+	if request.Page != 0 {
+		page = request.Page
+	}
+
+	if request.PageSize != 0 {
+		pageSize = request.PageSize
 	}
 
 	switch {
