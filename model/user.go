@@ -82,3 +82,52 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 
 	return &users, nil
 }
+
+// get user by ID
+func (appModel *AppModel) GetUserByID(userID uint, request *request.GetUserByIDRequest) (*User, *app.Error) {
+	user := User{
+		ID:        userID,
+		FirstName: request.FirstName,
+		LastName:  request.LastName,
+	} // how to fill rest of the details like first_name, last_name and email
+	result := appModel.DB.First(&user)
+
+	if result.Error != nil {
+
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+	return &user, nil
+
+}
+
+// update user by id
+func (appModel *AppModel) UpdateUser(userID uint, request *request.UpdateUserRequest) (*User, *app.Error) {
+	user := User{
+		ID:        userID,
+		FirstName: request.FirstName,
+		LastName:  request.LastName,
+		Email:     request.Email,
+		Password:  request.Password,
+	}
+
+	result := appModel.DB.Save(&user)
+
+	if result.Error != nil {
+
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+	return &user, nil
+
+}
+
+// delete user
+func (appModel *AppModel) DeleteUser(userID uint) *app.Error {
+	user := User{
+		ID: userID,
+	}
+	result := appModel.DB.Delete(&user)
+	if result.Error != nil {
+		return app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+	return nil
+}

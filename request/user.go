@@ -34,3 +34,27 @@ type GetUsersRequest struct {
 // 		validation.Field(&r.FirstName, validation.Required.When(r.Email == "").Error("Either phone or Email is required.")),
 // 	)
 // }
+
+type GetUserByIDRequest struct {
+	//ID uint `schema:"id"`
+	FirstName string `schema:"first_name"`
+	LastName  string `schema:"last_name"`
+	Email     string `schema:"email"`
+}
+
+type UpdateUserRequest struct {
+	ID        uint   `schema:"id"`
+	FirstName string `json:"first_name,omitempty"`
+	LastName  string `json:"last_name,omitempty"`
+	Email     string `json:"email,omitempty"`
+	Password  string `json:"password,omitempty"`
+}
+
+func (r UpdateUserRequest) ValidateUpdateUserRequest() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Email, validation.Required, is.Email),
+		validation.Field(&r.FirstName, validation.Required, validation.Length(3, 20)),
+		validation.Field(&r.LastName, validation.Required, validation.Length(3, 20)),
+		validation.Field(&r.Password, validation.Required, validation.Length(5, 50)),
+	)
+}
