@@ -21,6 +21,15 @@ type User struct {
 	UpdatedAt time.Time
 }
 
+type Tweet struct {
+	ID          int `gorm:"primarykey"`
+	UserId      int
+	Content     string
+	ParentTweet int
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
 type Users []*User
 
 func (appModel *AppModel) CreateUser(request *request.CreateUserRequest) (*User, *app.Error) {
@@ -128,6 +137,117 @@ func (appModel *AppModel) UpdateUser(ID int64, request *request.CreateUserReques
 func (appModel *AppModel) DeleteUserByID(ID int64, request *request.GetUserByIDRequest) *app.Error {
 
 	result := appModel.DB.Delete(&User{}, ID)
+
+	if result.Error != nil {
+		return app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return nil
+}
+
+type Tweets []*Tweet
+
+func (appModel *AppModel) CreateTweet(request *request.CreateTweetRequest) (*Tweet, *app.Error) {
+	tweet := Tweet{
+		UserId:      request.UserId,
+		Content:     request.Content,
+		ParentTweet: request.ParentTweet,
+	}
+	result := appModel.DB.Create(&tweet)
+
+	if result.Error != nil {
+		me, ok := result.Error.(*mysql.MySQLError)
+		if !ok {
+			return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
+		}
+		if me.Number == 1062 {
+			return nil, app.
+				NewError(result.Error).
+				SetMessage("already").
+				SetCode(http.StatusBadRequest)
+		}
+		return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
+	}
+	return &tweet, nil
+}
+
+func (appModel *AppModel) GetTweets(request *request.GetTweetsRequest) (*Tweets, *app.Error) {
+	var tweets Tweets
+	var where *gorm.DB = appModel.DB
+	var page, pageSize int
+
+	if request.ID != 0 {
+		where = appModel.DB.Where("ID = ?", request.ID)
+	} else if request.ParentTweet != 0 {
+		where = appModel.DB.Where("first_name = ?", "%", request.ParentTweet)
+	} else if request.UserId != 0 {
+		where = appModel.DB.Where("user_id = ?", request.UserId)
+	}
+
+	if request.Page == 0 {
+		page = 1
+	}
+
+	switch {
+	case request.PageSize > 100:
+		pageSize = 100
+	case request.PageSize <= 0:
+		pageSize = 10
+	}
+
+	offset := (page - 1) * pageSize
+
+	result := where.
+		Offset(offset).
+		Limit(pageSize).
+		Find(&tweets)
+
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return &tweets, nil
+}
+
+func (appModel *AppModel) GetTweetByID(ID int64, request *request.GetTweetByIDRequest) (*Tweets, *app.Error) {
+	var tweets Tweets
+
+	result := appModel.DB.Find(&tweets, ID)
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return &tweets, nil
+}
+
+func (appModel *AppModel) UpdateTweet(ID int64, request *request.CreateTweetRequest) (*Tweet, *app.Error) {
+	var tweet Tweet
+	result := appModel.DB.First(&tweet, ID)
+
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	if request.ParentTweet != 0 {
+		tweet.ParentTweet = request.ParentTweet
+	}
+	if request.UserId != 0 {
+		tweet.UserId = request.UserId
+	}
+
+	result = appModel.DB.Save(&tweet)
+
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return &tweet, nil
+
+}
+
+func (appModel *AppModel) DeleteTweetByID(ID int64, request *request.GetTweetByIDRequest) *app.Error {
+
+	result := appModel.DB.Delete(&Tweet{}, ID)
 
 	if result.Error != nil {
 		return app.NewError(result.Error).SetCode(http.StatusNotFound)
