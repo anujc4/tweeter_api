@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 
 	"github.com/anujc4/tweeter_api/internal/env"
+	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 )
 
@@ -11,11 +12,13 @@ type HttpApp struct {
 	DB         *gorm.DB
 	PrivateKey *rsa.PrivateKey
 	PublicKey  *rsa.PublicKey
+	Redis      *redis.Client
 }
 
 func NewHttpApp(env *env.Env) *HttpApp {
 	return &HttpApp{
 		DB:         env.DB,
 		PrivateKey: env.PrivateKey,
+		Redis:      env.Redis,
 	}
 }

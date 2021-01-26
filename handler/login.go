@@ -2,14 +2,18 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/anujc4/tweeter_api/internal/app"
+	"github.com/anujc4/tweeter_api/internal/constants"
 	"github.com/anujc4/tweeter_api/model"
 	"github.com/anujc4/tweeter_api/request"
 	"github.com/anujc4/tweeter_api/response"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -44,12 +48,15 @@ func (env *HttpApp) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	id := uuid.NewString()
+
 	claims := request.UserSessionClaims{
 		UserID: user.ID,
 		Email:  user.Email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().UTC().AddDate(0, 0, 3).Unix(),
 			IssuedAt:  time.Now().UTC().Unix(),
+			Id:        id,
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
@@ -63,10 +70,28 @@ func (env *HttpApp) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	env.Redis.SAdd(r.Context(), fmt.Sprintf("%s%d", constants.RedisJwtPrefix, user.ID), id)
+
 	resp := response.LoginResponse{
 		Email: user.Email,
 		Token: signedToken,
 	}
 
 	app.RenderJSON(w, resp)
+}
+
+func (env *HttpApp) Logout(w http.ResponseWriter, r *http.Request) {
+
+	claims, ok := r.Context().Value("claims").(*request.UserSessionClaims)
+	if !ok {
+		e := app.NewError(errors.New("parsing error")).
+			SetCode(http.StatusInternalServerError).
+			SetMessage("Unable to process request.")
+		app.RenderErrorJSON(w, e)
+	}
+
+	// Invaludate the token
+	env.Redis.SRem(r.Context(), fmt.Sprintf("%s%d", constants.RedisJwtPrefix, claims.UserID), claims.Id)
+
+	w.WriteHeader(http.StatusNoContent)
 }

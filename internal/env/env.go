@@ -11,6 +11,7 @@ import (
 
 	"github.com/anujc4/tweeter_api/config"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/go-redis/redis/v8"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -20,6 +21,7 @@ type Env struct {
 	DB         *gorm.DB
 	PrivateKey *rsa.PrivateKey
 	PublicKey  *rsa.PublicKey
+	Redis      *redis.Client
 }
 
 func Init() *Env {
@@ -28,6 +30,7 @@ func Init() *Env {
 
 	InitAuth(conf, &env)
 	InitDB(conf, &env)
+	InitRedis(conf, &env)
 
 	return &env
 }
@@ -77,4 +80,14 @@ func InitAuth(conf *config.Configuration, env *Env) {
 		log.Fatal("unable to parse public key", err)
 	}
 	env.PublicKey = public_key
+}
+
+func InitRedis(conf *config.Configuration, env *Env) {
+	redisURL := fmt.Sprintf("%s:%d", conf.Redis.Host, conf.Redis.Port)
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     redisURL,
+		Password: conf.Redis.Password,
+		DB:       conf.Redis.DB,
+	})
+	env.Redis = rdb
 }

@@ -28,6 +28,7 @@ func routeHandler(env *env.Env) {
 
 	router.HandleFunc("/signup", h.CreateUser).Methods("POST")
 	router.HandleFunc("/login", h.Login).Methods("POST")
+	apiV1.HandleFunc("/logout", h.Logout).Methods("GET")
 
 	// Users API
 	apiV1.HandleFunc("/users", h.GetUsers).Methods("GET")

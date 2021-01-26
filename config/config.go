@@ -9,6 +9,7 @@ import (
 type Configuration struct {
 	MySql *MySqlConfiguration
 	Auth  *AuthenticationConfig
+	Redis *RedisConfiguration
 }
 
 type MySqlConfiguration struct {
@@ -17,6 +18,13 @@ type MySqlConfiguration struct {
 	Password string
 	Host     string
 	Port     int
+}
+
+type RedisConfiguration struct {
+	Host     string
+	Port     int
+	Password string
+	DB       int
 }
 
 type AuthenticationConfig struct {

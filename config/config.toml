@@ -9,3 +9,9 @@ username = "root"
 path = "secrets"
 private_key_file_name = "tweeter-private.pem"
 public_key_file_name = "tweeter-public.pem"
+
+[redis]
+host = "localhost"
+port = 6379
+password = ""
+db = 0
