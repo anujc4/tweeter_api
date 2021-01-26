@@ -67,6 +67,7 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 	case request.PageSize > 100:
 		pageSize = 100
 	case request.PageSize <= 0:
+	}
 	if request.PageSize <= 0 {
 		pageSize = 10
 	} else {
