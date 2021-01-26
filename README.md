@@ -12,6 +12,16 @@ The service runs in a MySQL database. Make sure mysql is running. Modify [config
 make db_migrate_up
 ```
 
+You will also need to create a RSA Key Pair to create JWT sessions. To do so, cd into the secrets directory and execute the commands below.
+
+```{shell}
+# Generate private key
+openssl genrsa -out tweeter-private.pem 2048
+
+# Generate public key
+openssl rsa -in tweeter-private.pem -pubout -out tweeter-public.pem
+```
+
 ## Run App Server
 
 Build the web server
