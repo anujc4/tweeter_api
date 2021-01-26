@@ -26,11 +26,11 @@ func routeHandler(handler *handler.HttpApp) {
 	apiV1.HandleFunc("/users", handler.GetUsers).Methods("GET")
 	apiV1.HandleFunc("/user/{user_id}", handler.GetUserByID).Methods("GET")
 	apiV1.HandleFunc("/user/{user_id}", handler.UpdateUser).Methods("PUT")
-	apiV1.HandleFunc("/user/{user_id}", handler.UpdateUser).Methods("DELETE")
+	apiV1.HandleFunc("/user/{user_id}", handler.DeleteUser).Methods("DELETE")
 
 	// Tweets
 	// TODO: Implement the handler
-	// apiV1.HandleFunc("/tweet", handler.CreateTweet).Methods("POST")
+	apiV1.HandleFunc("/tweet", handler.CreateTweet).Methods("POST")
 	// apiV1.HandleFunc("/tweets", handler.GetTweets).Methods("GET")
 	// apiV1.HandleFunc("/tweet/{tweet_id}", handler.GetTweetByID).Methods("GET")
 	// apiV1.HandleFunc("/tweet/{tweet_id}", handler.UpdateTweet).Methods("PUT")

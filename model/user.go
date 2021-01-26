@@ -82,3 +82,58 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 
 	return &users, nil
 }
+
+func (appModel *AppModel) GetUserByID(user_id *string) (*User, *app.Error) {
+	var user User
+	var where *gorm.DB = appModel.DB
+
+	where = appModel.DB.Where("id = ?", user_id)
+
+	result := where.Find(&user)
+
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return &user, nil
+}
+
+func (appModel *AppModel) UpdateUser(request *request.CreateUserRequest, user_id *string) (*User, *app.Error) {
+	var user User
+	result := appModel.DB.Model(&user).Where("id = ?", user_id).Updates(User{
+		FirstName: request.FirstName,
+		LastName:  request.LastName,
+		Email:     request.Email,
+		Password:  request.Password,
+	})
+
+	if result.Error != nil {
+		me, ok := result.Error.(*mysql.MySQLError)
+		if !ok {
+			return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
+		}
+		if me.Number == 1062 {
+			return nil, app.
+				NewError(result.Error).
+				SetMessage("Email " + request.Email + " is already taken").
+				SetCode(http.StatusBadRequest)
+		}
+		return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
+	}
+	return &user, nil
+}
+
+func (appModel *AppModel) DeleteUser(user_id *string) (*User, *app.Error) {
+	var user User
+	var where *gorm.DB = appModel.DB
+
+	where = appModel.DB.Where("id = ?", user_id)
+
+	result := where.Delete(&user)
+
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return &user, nil
+}
