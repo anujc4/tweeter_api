@@ -1,11 +1,13 @@
 package model
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
 	"github.com/anujc4/tweeter_api/internal/app"
 	"github.com/anujc4/tweeter_api/request"
+	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -14,20 +16,18 @@ import (
 type Tweet struct {
 	ID          uint `gorm:"primarykey"`
 	Content     string
-	ParentTweet uint
+	ParentTweet uint `gorm:"default:null"`
 	UserID      uint
 	User        User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
 
-/*
 //CreateTweet creates a new tweet
 func (appModel *AppModel) CreateTweet(request *request.CreateTweetRequest) (*Tweet, *app.Error) {
 	tweet := Tweet{
-		UserID:      request.UserID,
-		Content:     request.Content,
-		ParentTweet: request.ParentTweet,
+		UserID:  request.UserID,
+		Content: request.Content,
 	}
 	result := appModel.DB.Create(&tweet)
 
@@ -38,9 +38,21 @@ func (appModel *AppModel) CreateTweet(request *request.CreateTweetRequest) (*Twe
 		}
 		return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
 	}
+
+	// Hack to get this bloody thing working
+	// Default vlaue of uint in parent_tweet was giving referencial error cause
+	// tweet with 0 id does not exist
+	var unmarshledData map[string]interface{}
+	marshledData, _ := json.Marshal(request)
+	json.Unmarshal(marshledData, &unmarshledData)
+
+	if _, exist := unmarshledData["parent_tweet"]; exist {
+		tweet.ParentTweet = request.ParentTweet
+		appModel.DB.Save(&tweet)
+	}
+
 	return &tweet, nil
 }
-*/
 
 //Tweets is an alias to an array of tweet
 type Tweets []*Tweet

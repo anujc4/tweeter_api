@@ -9,9 +9,9 @@ import (
 // TweetResponse represents a tweet response
 type TweetResponse struct {
 	ID          uint      `json:"id,omitempty"`
-	Content     string    `json:"first_name,omitempty"`
-	UserID      uint      `json:"last_name"`
-	ParentTweet uint      `json:"email,omitempty"`
+	Content     string    `json:"content,omitempty"`
+	UserID      uint      `json:"user_id"`
+	ParentTweet uint      `json:"parent_tweet,omitempty"`
 	CreatedAt   time.Time `json:"created_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }

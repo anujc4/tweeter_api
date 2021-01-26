@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/anujc4/tweeter_api/internal/app"
@@ -10,7 +11,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-/*
 //CreateTweet is endpoint to create a tweet -> /tweet [POST]
 func (env *HttpApp) CreateTweet(w http.ResponseWriter, req *http.Request) {
 	var request request.CreateTweetRequest
@@ -33,7 +33,6 @@ func (env *HttpApp) CreateTweet(w http.ResponseWriter, req *http.Request) {
 	}
 	app.RenderJSONwithStatus(w, http.StatusCreated, response.TransformTweetResponse(*tweet))
 }
-*/
 
 // GetTweets is api endpoint to get all tweets -> /tweets [GET]
 func (env *HttpApp) GetTweets(w http.ResponseWriter, req *http.Request) {
