@@ -8,6 +8,7 @@ import (
 	"github.com/anujc4/tweeter_api/model"
 	"github.com/anujc4/tweeter_api/request"
 	"github.com/anujc4/tweeter_api/response"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 )
 
@@ -60,16 +61,22 @@ func (env *HttpApp) GetUsers(w http.ResponseWriter, req *http.Request) {
 }
 
 func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	params := mux.Vars(req)
+	user_id := params["user_id"]
+
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	user, err := appModel.GetUserByID(&user_id)
+	if err != nil {
+		app.RenderErrorJSON(w, err)
+		return
+	}
+	app.RenderJSON(w, response.TransformUserResponse(*user))
 }
 
 func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+
 }
 
 func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+
 }
