@@ -29,10 +29,10 @@ func TransformTweetResponse(tweet model.Tweet) TweetResponse {
 }
 
 //MapTweetResponse does what it says ig
-// func MapTweetResponse(vs model.Users, f func(model.User) UserResponse) []UserResponse {
-// 	vsm := make([]UserResponse, len(vs))
-// 	for i := range vs {
-// 		vsm[i] = f(*vs[i])
-// 	}
-// 	return vsm
-// }
+func MapTweetResponse(vs model.Tweets, f func(model.Tweet) TweetResponse) []TweetResponse {
+	vsm := make([]TweetResponse, len(vs))
+	for i := range vs {
+		vsm[i] = f(*vs[i])
+	}
+	return vsm
+}

@@ -68,12 +68,12 @@ func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 	userID := vars["user_id"]
 
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	user, err := appModel.GetUserByID(userID)
+	user, err := appModel.GetUserByID(&userID)
 	if err != nil {
 		app.RenderErrorJSON(w, err)
 		return
 	}
-	resp := response.TransformUserResponse(user)
+	resp := response.TransformUserResponse(*user)
 	app.RenderJSON(w, resp)
 }
 
@@ -96,12 +96,12 @@ func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 	}
 
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	user, err := appModel.UpdateUser(request)
+	user, err := appModel.UpdateUser(&request)
 	if err != nil {
 		app.RenderErrorJSON(w, err)
 		return
 	}
-	resp := response.TransformUserResponse(user)
+	resp := response.TransformUserResponse(*user)
 	app.RenderJSON(w, resp)
 }
 
@@ -111,7 +111,7 @@ func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
 	userID := vars["user_id"]
 
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	err := appModel.DeleteUser(userID)
+	err := appModel.DeleteUser(&userID)
 	if err != nil {
 		app.RenderErrorJSON(w, err)
 		return

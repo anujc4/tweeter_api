@@ -90,18 +90,18 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 }
 
 // GetUserByID returns a user given a userID
-func (appModel AppModel) GetUserByID(userID string) (User, *app.Error) {
+func (appModel AppModel) GetUserByID(userID *string) (*User, *app.Error) {
 	var user User
-	tx := appModel.DB.First(&user, userID)
+	tx := appModel.DB.First(&user, *userID)
 	if tx.Error != nil {
-		return User{}, app.NewError(tx.Error).SetCode(http.StatusNotFound)
+		return nil, app.NewError(tx.Error).SetCode(http.StatusNotFound)
 	}
-	return user, nil
+	return &user, nil
 }
 
 // DeleteUser deletes user form database given an ID
-func (appModel AppModel) DeleteUser(userID string) *app.Error {
-	tx := appModel.DB.Delete(&User{}, userID)
+func (appModel AppModel) DeleteUser(userID *string) *app.Error {
+	tx := appModel.DB.Delete(&User{}, *userID)
 	if tx.RowsAffected == 0 {
 		return app.NewError(errors.New("Object does not exist")).SetCode(404)
 	}
@@ -109,18 +109,18 @@ func (appModel AppModel) DeleteUser(userID string) *app.Error {
 }
 
 // UpdateUser updates a user in database
-func (appModel AppModel) UpdateUser(user request.UpdateUserRequest) (User, *app.Error) {
-	var userObject User
-	tx := appModel.DB.Find(&userObject, user.ID).Updates(
+func (appModel AppModel) UpdateUser(request *request.UpdateUserRequest) (*User, *app.Error) {
+	var user User
+	tx := appModel.DB.Find(&user, request.ID).Updates(
 		User{
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
-			Email:     user.Email,
+			FirstName: request.FirstName,
+			LastName:  request.LastName,
+			Email:     request.Email,
 		},
 	)
 
 	if tx.RowsAffected == 0 {
-		return User{}, app.NewError(errors.New("Object does not exist")).SetCode(404)
+		return nil, app.NewError(errors.New("Object does not exist")).SetCode(404)
 	}
-	return userObject, nil
+	return &user, nil
 }
