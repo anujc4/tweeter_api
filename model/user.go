@@ -107,3 +107,20 @@ func (appModel AppModel) DeleteUser(userID string) *app.Error {
 	}
 	return nil
 }
+
+// UpdateUser updates a user in database
+func (appModel AppModel) UpdateUser(user request.UpdateUserRequest) (User, *app.Error) {
+	var userObject User
+	tx := appModel.DB.Find(&userObject, user.ID).Updates(
+		User{
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+		},
+	)
+
+	if tx.RowsAffected == 0 {
+		return User{}, app.NewError(errors.New("Object does not exist")).SetCode(404)
+	}
+	return userObject, nil
+}
