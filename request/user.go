@@ -5,6 +5,7 @@ import (
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
+//CreateUserRequest describes a create users request
 type CreateUserRequest struct {
 	FirstName string `json:"first_name,omitempty"`
 	LastName  string `json:"last_name,omitempty"`
@@ -12,6 +13,7 @@ type CreateUserRequest struct {
 	Password  string `json:"password,omitempty"`
 }
 
+//ValidateCreateUserRequest validates CreateUserRequest object
 func (r CreateUserRequest) ValidateCreateUserRequest() error {
 	return validation.ValidateStruct(&r,
 		validation.Field(&r.Email, validation.Required, is.Email),
@@ -21,10 +23,28 @@ func (r CreateUserRequest) ValidateCreateUserRequest() error {
 	)
 }
 
+//GetUsersRequest describes a get users request
 type GetUsersRequest struct {
 	PaginationRequest
 	FirstName string `schema:"first_name"`
 	Email     string `schema:"email"`
+}
+
+//UpdateUserRequest describes an update user request
+type UpdateUserRequest struct {
+	ID        string
+	FirstName string `json:"first_name,omitempty"`
+	LastName  string `json:"last_name,omitempty"`
+	Email     string `json:"email,omitempty"`
+}
+
+//ValidateUpdateUserRequest validates UpdateUserRequest object
+func (r UpdateUserRequest) ValidateUpdateUserRequest() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Email, is.Email),
+		validation.Field(&r.FirstName, validation.Length(3, 20)),
+		validation.Field(&r.LastName, validation.Length(3, 20)),
+	)
 }
 
 // eg. Validation if either phone no or email was required
