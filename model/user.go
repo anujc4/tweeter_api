@@ -122,3 +122,18 @@ func (appModel *AppModel) UpdateUser(request *request.CreateUserRequest, user_id
 	}
 	return &user, nil
 }
+
+func (appModel *AppModel) DeleteUser(user_id *string) (*User, *app.Error) {
+	var user User
+	var where *gorm.DB = appModel.DB
+
+	where = appModel.DB.Where("id = ?", user_id)
+
+	result := where.Delete(&user)
+
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return &user, nil
+}

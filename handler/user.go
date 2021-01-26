@@ -99,5 +99,14 @@ func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 }
 
 func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	user_id := params["user_id"]
 
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	user, err := appModel.DeleteUser(&user_id)
+	if err != nil {
+		app.RenderErrorJSON(w, err)
+		return
+	}
+	app.RenderJSON(w, response.TransformUserResponse(*user))
 }
