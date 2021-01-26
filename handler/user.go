@@ -74,7 +74,28 @@ func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 }
 
 func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
+	var request request.CreateUserRequest
+	decoder := json.NewDecoder(req.Body)
+	if err := decoder.Decode(&request); err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
 
+	if err := request.ValidateUpdateUserRequest(); err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
+
+	params := mux.Vars(req)
+	user_id := params["user_id"]
+
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	user, err := appModel.UpdateUser(&request, &user_id)
+	if err != nil {
+		app.RenderErrorJSON(w, err)
+		return
+	}
+	app.RenderJSONwithStatus(w, http.StatusOK, response.TransformUserResponse(*user))
 }
 
 func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {

@@ -27,6 +27,15 @@ type GetUsersRequest struct {
 	Email     string `schema:"email"`
 }
 
+func (r CreateUserRequest) ValidateUpdateUserRequest() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Email, is.Email),
+		validation.Field(&r.FirstName, validation.Length(3, 20)),
+		validation.Field(&r.LastName, validation.Length(3, 20)),
+		validation.Field(&r.Password, validation.Length(5, 50)),
+	)
+}
+
 // eg. Validation if either phone no or email was required
 // func (r GetUsersRequest) ValidateGetUsersRequest() error {
 // 	return validation.ValidateStruct(&r,
