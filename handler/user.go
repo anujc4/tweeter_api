@@ -74,15 +74,16 @@ func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 
 	var request request.GetUserByIDRequest
 
-	if err := decoder.Decode(&request, req.Form); err != nil {
-		app.RenderErrorJSON(w, app.NewError(err).SetCode(http.StatusBadRequest))
+	if decodeErr := decoder.Decode(&request, req.Form); decodeErr != nil {
+		app.RenderErrorJSON(w, app.NewError(decodeErr).SetCode(http.StatusBadRequest))
 		return
 	}
 
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	user, err := appModel.GetUserByID(uint(userID), &request)
-	if err != nil {
-		app.RenderErrorJSON(w, app.NewError(err))
+
+	user, getUserErr := appModel.GetUserByID(userID, &request)
+	if getUserErr != nil {
+		app.RenderErrorJSON(w, getUserErr)
 		return
 	}
 
@@ -101,19 +102,19 @@ func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 
 	var request request.UpdateUserRequest
 	decoder := json.NewDecoder(req.Body)
-	if err := decoder.Decode(&request); err != nil {
-		app.RenderErrorJSON(w, app.NewError(err))
+	if error := decoder.Decode(&request); error != nil {
+		app.RenderErrorJSON(w, app.NewError(error))
 		return
 	}
 
-	if err := request.ValidateUpdateUserRequest(); err != nil {
-		app.RenderErrorJSON(w, app.NewError(err))
+	if validateErr := request.ValidateUpdateUserRequest(); validateErr != nil {
+		app.RenderErrorJSON(w, app.NewError(validateErr))
 		return
 	}
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	user, err := appModel.UpdateUser(userID, &request)
-	if err != nil {
-		app.RenderErrorJSON(w, app.NewError(err))
+	user, modelErr := appModel.UpdateUser(userID, &request)
+	if modelErr != nil {
+		app.RenderErrorJSON(w, modelErr)
 		return
 	}
 	app.RenderJSONwithStatus(w, http.StatusCreated, response.TransformUserResponse(*user))
@@ -128,9 +129,9 @@ func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	appModel := model.NewAppModel(req.Context(), env.DB)
-	err = appModel.DeleteUser(userID)
-	if err != nil {
-		app.RenderErrorJSON(w, app.NewError(err))
+	deleteErr := appModel.DeleteUser(userID)
+	if deleteErr != nil {
+		app.RenderErrorJSON(w, deleteErr)
 		return
 	}
 
