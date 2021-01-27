@@ -116,7 +116,6 @@ func (appModel *AppModel) UpdateUser(request *request.CreateUserRequest,id int) 
 		FirstName: request.FirstName,
 		LastName:  request.LastName,
 		Email:     request.Email,
-		Password:  request.Password,
 	}
 
 	var result *gorm.DB = appModel.DB.Model(&user)
