@@ -60,16 +60,33 @@ func (env *HttpApp) GetUsers(w http.ResponseWriter, req *http.Request) {
 }
 
 func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	if err := req.ParseForm(); err != nil {
+		app.RenderErrorJSON(w, app.NewParseFormError(err))
+		return
+	}
+
+	var request request.GetUserByIDRequest
+	if err := decoder.Decode(&request, req.Form); err != nil {
+		app.RenderErrorJSON(w, app.NewError(err).SetCode(http.StatusBadRequest))
+		return
+	}
+
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	users, err := appModel.GetUserByID(&request)
+	if err != nil {
+		app.RenderErrorJSON(w, err)
+		return
+	}
+	resp := response.MapUsersResponse(*users, response.TransformUserResponse)
+	app.RenderJSON(w, resp)
 }
 
 func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	app.RenderJSON(w, "Not yet implementfed!")
 }
 
 func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
 	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	app.RenderJSON(w, "Not yet implemefnted!")
 }
