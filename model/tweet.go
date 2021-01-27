@@ -33,12 +33,7 @@ func (appModel *AppModel) CreateTweet(request *request.CreateTweetRequest) (*Twe
 		if !ok {
 			return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
 		}
-		if me.Number == 1062 {
-			return nil, app.
-				NewError(result.Error).
-				SetMessage("already").
-				SetCode(http.StatusBadRequest)
-		}
+	
 		return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
 	}
 	return &tweet, nil
