@@ -13,6 +13,10 @@ type Error struct {
 	err     error
 }
 
+func (err *Error) Error() string {
+	panic("implement me")
+}
+
 // Create a new Error struct
 func NewError(err error) *Error {
 	return &Error{err: errors.WithStack(err)}

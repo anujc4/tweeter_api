@@ -25,12 +25,20 @@ type GetUsersRequest struct {
 	PaginationRequest
 	FirstName string `schema:"first_name"`
 	Email     string `schema:"email"`
+	ID uint `schema:"id"`
 }
 
 // eg. Validation if either phone no or email was required
-// func (r GetUsersRequest) ValidateGetUsersRequest() error {
-// 	return validation.ValidateStruct(&r,
-// 		validation.Field(&r.Email, validation.Required.When(r.FirstName == "").Error("Either phone or Email is required.")),
-// 		validation.Field(&r.FirstName, validation.Required.When(r.Email == "").Error("Either phone or Email is required.")),
-// 	)
-// }
+//func (r GetUsersRequest) ValidateGetUsersRequest() error {
+//	return validation.ValidateStruct(&r,
+		//validation.Field(&r.Email, validation.Required.When(r.FirstName == "").Error("Either phone or Email is required.")),
+		//validation.Field(&r.FirstName, validation.Required.When(r.Email == "").Error("Either phone or Email is required.")),
+	//)
+//}
+
+type UpdateUserRequest struct {
+	FirstName string `json:"first_name,omitempty"`
+	LastName  string `json:"last_name,omitempty"`
+	Email     string `json:"email,omitempty"`
+	Password  string `json:"password,omitempty"`
+}
