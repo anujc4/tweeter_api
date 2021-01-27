@@ -33,8 +33,7 @@ func (appModel *AppModel) CreateTweet(request *request.CreateTweetRequest) (*Twe
 		if !ok {
 			return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
 		}
-	
-		return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
+		
 	}
 	return &tweet, nil
 }
