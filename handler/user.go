@@ -63,7 +63,7 @@ func (env *HttpApp) GetUsers(w http.ResponseWriter, req *http.Request) {
 	app.RenderJSON(w, resp)
 }
 
-//GetUsersByID method in handler user.go
+//GetUserByID method in handler user.go
 func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 	userID, err := getID(req)
 

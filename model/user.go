@@ -60,13 +60,14 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 
 	if request.Page == 0 {
 		page = 1
+	} else {
+		page = request.Page
 	}
 
-	switch {
-	case request.PageSize > 100:
-		pageSize = 100
-	case request.PageSize <= 0:
+	if request.PageSize <= 0 {
 		pageSize = 10
+	} else {
+		pageSize = request.PageSize
 	}
 
 	offset := (page - 1) * pageSize
