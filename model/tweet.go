@@ -29,15 +29,6 @@ func (appModel *AppModel) CreateTweet(request *request.CreateTweetRequest) (*Twe
 		UserID:  request.UserID,
 		Content: request.Content,
 	}
-	result := appModel.DB.Create(&tweet)
-
-	if result.Error != nil {
-		_, ok := result.Error.(*mysql.MySQLError)
-		if !ok {
-			return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
-		}
-		return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
-	}
 
 	// Hack to get this bloody thing working
 	// Default vlaue of uint in parent_tweet was giving referencial error cause
@@ -46,10 +37,17 @@ func (appModel *AppModel) CreateTweet(request *request.CreateTweetRequest) (*Twe
 	var unmarshledData map[string]interface{}
 	marshledData, _ := json.Marshal(request)
 	json.Unmarshal(marshledData, &unmarshledData)
-
 	if _, exist := unmarshledData["parent_tweet"]; exist {
 		tweet.ParentTweet = request.ParentTweet
-		appModel.DB.Save(&tweet)
+	}
+	result := appModel.DB.Create(&tweet)
+
+	if result.Error != nil {
+		_, ok := result.Error.(*mysql.MySQLError)
+		if !ok {
+			return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
+		}
+		return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
 	}
 
 	return &tweet, nil
