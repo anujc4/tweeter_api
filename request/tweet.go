@@ -6,7 +6,7 @@ import validation "github.com/go-ozzo/ozzo-validation/v4"
 type CreateTweetRequest struct {
 	UserID      uint   `json:"user_id,omitempty"`
 	Content     string `json:"content,omitempty"`
-	ParentTweet uint   `json:"parent,omitempty"`
+	ParentTweet uint   `json:"parent_tweet,omitempty"`
 }
 
 //ValidateCreateTweetRequest validates CreateUserRequest object
