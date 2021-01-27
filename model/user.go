@@ -50,15 +50,15 @@ func (appModel *AppModel) CreateUser(request *request.CreateUserRequest) (*User,
 
 func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *app.Error) {
 	var users Users
-	var where *gorm.DB = appModel.DB
+	var userModel *gorm.DB = appModel.DB
 	var page, pageSize int
 
 	if request.Email != "" {
-		where = appModel.DB.Where("email = ?", request.Email)
+		userModel = userModel.Where("email = ?", request.Email)
 	} else if request.FirstName != "" {
-		where = appModel.DB.Where("first_name LIKE ?", "%"+request.FirstName+"%")
+		userModel = userModel.Where("first_name LIKE ?", "%"+request.FirstName+"%")
 	}else if request.ID != 0 {
-		where = appModel.DB.Where("id = ?", request.ID)
+		userModel = userModel.Where("id = ?", request.ID)
 	}
 
 	if request.Page == 0 {
@@ -73,7 +73,7 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 	}
 	offset := (page - 1) * pageSize
 
-	result := where.
+	result := userModel.
 		Offset(offset).
 		Limit(pageSize).
 		Find(&users)
@@ -81,14 +81,13 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 	if result.Error != nil {
 		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
 	}
-
 	return &users, nil
 }
 
 func (appModel *AppModel) GetUserById(id int) (*User, *app.Error){
 	var user User
 	var userModel *gorm.DB = appModel.DB
-	userModel = appModel.DB.Where("id = ?", id)
+	userModel = userModel.Where("id = ?", id)
 	result := userModel.Find(&user)
 	fmt.Println(result)
 	if result.Error != nil {
