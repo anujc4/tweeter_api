@@ -3,12 +3,13 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-
+	"strconv"
 	"github.com/anujc4/tweeter_api/internal/app"
 	"github.com/anujc4/tweeter_api/model"
 	"github.com/anujc4/tweeter_api/request"
 	"github.com/anujc4/tweeter_api/response"
 	"github.com/gorilla/schema"
+	"github.com/gorilla/mux"
 )
 
 // Set a Decoder instance as a package global, because it caches
@@ -61,7 +62,30 @@ func (env *HttpApp) GetUsers(w http.ResponseWriter, req *http.Request) {
 
 func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	//app.RenderJSON(w, "Not yet implemented!")
+	params := mux.Vars(req)
+	userid := params["user_id"]
+	id,err := strconv.Atoi(userid)
+
+	if err != nil {
+		app.RenderErrorJSON(w,app.NewError(err))
+		return 
+	}
+	parseErr := req.ParseForm()
+	if parseErr != nil {
+		app.RenderErrorJSON(w,app.NewParseFormError(parseErr))
+		return 
+	}
+
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	users, getUserErr := appModel.GetUserByID(id)
+	if getUserErr != nil {
+		app.RenderErrorJSON(w,getUserErr)
+		return 
+	}
+
+	resp := response.TransformUserResponse(*users)
+	app.RenderJSON(w, resp)
 }
 
 func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {

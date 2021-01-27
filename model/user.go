@@ -82,3 +82,23 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 
 	return &users, nil
 }
+
+
+func (appModel *AppModel) GetUserByID(id int) (*User, *app.Error) {
+	var users User
+	var where *gorm.DB = appModel.DB
+
+	if id > 0 {
+		where = appModel.DB.Where("id = ?", id)
+	} 
+
+	
+	result := where.
+		Find(&users)
+
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+ 
+	return &users, nil
+}
