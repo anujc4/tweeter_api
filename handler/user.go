@@ -102,10 +102,7 @@ func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 		if err1 != nil {
 				app.RenderErrorJSON(w, app.NewParseFormError(err1))
 		}
-		if err := request.ValidateCreateUserRequest(); err != nil {
-	 		app.RenderErrorJSON(w, app.NewError(err))
-	 		return
-	 	}
+		
 
 	appModel := model.NewAppModel(req.Context(), env.DB)
 	err := appModel.UpdateUser(&request,id)
