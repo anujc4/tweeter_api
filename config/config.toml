@@ -1,0 +1,6 @@
+[mysql]
+database = "tweeter_db"
+host = "127.0.0.1"
+password = "sid"
+port = "3307"
+username = "root"

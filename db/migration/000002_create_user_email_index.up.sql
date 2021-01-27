@@ -1,0 +1,1 @@
+CREATE INDEX `user_email` ON `users` (`email`);
