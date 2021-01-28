@@ -90,10 +90,52 @@ func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 
 func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	//app.RenderJSON(w, "Not yet implemented!")
+	var request request.CreateUserRequest
+	decoder := json.NewDecoder(req.Body)
+	if err := decoder.Decode(&request); err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
+	appModel := model.NewAppModel(req.Context(), env.DB)
+
+	params := mux.Vars(req)
+	userid:= params["user_id"]
+	id, err1 := strconv.Atoi(userid)
+		if err1 != nil {
+				app.RenderErrorJSON(w, app.NewParseFormError(err1))
+		}
+		if err := request.ValidateCreateUserRequest(); err != nil {
+	 		app.RenderErrorJSON(w, app.NewError(err))
+	 		return
+	 	}
+	err := appModel.UpdateUser(&request,id)
+	if err != nil {
+		app.RenderErrorJSON(w, err)
+		return
+	}
+	app.RenderJSON(w, "updated user ")
 }
 
 func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
 	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	//app.RenderJSON(w, "Not yet implemented!")
+	params := mux.Vars(req)
+	userid:= params["user_id"]
+	id, err1 := strconv.Atoi(userid)
+		if err1 != nil {
+			app.RenderErrorJSON(w, app.NewParseFormError(err1))
+		}
+	if err := req.ParseForm(); err != nil {
+		app.RenderErrorJSON(w, app.NewParseFormError(err))
+		return
+	}
+	appModel := model.NewAppModel(req.Context(), env.DB)
+
+	err := appModel.DeleteUser(id)
+	if err != nil {
+		app.RenderErrorJSON(w, err)
+		return
+	}
+	app.RenderJSON(w, "deleted user ")
 }

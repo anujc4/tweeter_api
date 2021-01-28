@@ -67,6 +67,8 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 		pageSize = 100
 	case request.PageSize <= 0:
 		pageSize = 10
+	case request.PageSize > 0:
+		pageSize = request.PageSize
 	}
 
 	offset := (page - 1) * pageSize
@@ -101,4 +103,86 @@ func (appModel *AppModel) GetUserByID(id int) (*User, *app.Error) {
 	}
  
 	return &users, nil
+}
+
+
+func (appModel *AppModel) UpdateUser(request *request.CreateUserRequest,id int) (*app.Error) {
+	var user1 User
+	user := User{
+		FirstName: request.FirstName,
+		LastName:  request.LastName,
+		Email:     request.Email,
+		Password:  request.Password,
+	}
+	var result *gorm.DB = appModel.DB.Model(&user)
+	if id > 0 {
+		result.Where("id = ?",id).First(&user1)
+		if result.Error != nil {
+			return app.
+						NewError(result.Error).
+						SetMessage("user not found").
+						SetCode(http.StatusBadRequest)
+		}
+
+
+		if user.FirstName !="" {
+			result.Where("id = ?",id).Update("first_name", user.FirstName)
+			if result.Error != nil {
+				me, ok := result.Error.(*mysql.MySQLError)
+				if !ok {
+					return nil
+				}
+				if me.Number > 0 {
+					return nil
+				}
+				return nil
+			}
+		}
+		if request.LastName !="" {
+			result.Where("id = ?",id).Update("last_name", user.LastName)
+			if result.Error != nil {
+				me, ok := result.Error.(*mysql.MySQLError)
+				if !ok {
+					return nil
+				}
+				if me.Number > 0 {
+					return nil
+				}
+				return nil
+			}
+
+		}
+		if request.Email !="" {
+			result.Where("id = ?",id).Update("email", user.Email)
+			if result.Error != nil {
+				me, ok := result.Error.(*mysql.MySQLError)
+				if !ok {
+					return nil
+				}
+				if me.Number == 1062 {
+					return  app.
+						NewError(result.Error).
+						SetMessage("Email " + request.Email + " is already taken").
+						SetCode(http.StatusBadRequest)
+				}
+				return nil
+			}
+		}
+	}
+	return nil
+}
+
+func(appModel *AppModel) DeleteUser(id int)(*app.Error)  {
+	var users User
+	var where *gorm.DB = appModel.DB
+	if id > 0 {
+		where = appModel.DB.Delete(&users,id)
+	}
+	if where.Error != nil {
+		return app.
+			NewError(where.Error).
+			SetMessage("user not found").
+			SetCode(http.StatusBadRequest)
+	}
+	return nil
 }
