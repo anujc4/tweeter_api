@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -49,13 +50,15 @@ func (appModel *AppModel) CreateUser(request *request.CreateUserRequest) (*User,
 
 func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *app.Error) {
 	var users Users
-	var where *gorm.DB = appModel.DB
+	var userModel *gorm.DB = appModel.DB
 	var page, pageSize int
 
 	if request.Email != "" {
-		where = appModel.DB.Where("email = ?", request.Email)
+		userModel = userModel.Where("email = ?", request.Email)
 	} else if request.FirstName != "" {
-		where = appModel.DB.Where("first_name LIKE ?", "%"+request.FirstName+"%")
+		userModel = userModel.Where("first_name LIKE ?", "%"+request.FirstName+"%")
+	}else if request.ID != 0 {
+		userModel = userModel.Where("id = ?", request.ID)
 	}
 
 	if request.Page == 0 {
@@ -68,10 +71,9 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 	case request.PageSize <= 0:
 		pageSize = 10
 	}
-
 	offset := (page - 1) * pageSize
 
-	result := where.
+	result := userModel.
 		Offset(offset).
 		Limit(pageSize).
 		Find(&users)
@@ -79,6 +81,50 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 	if result.Error != nil {
 		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
 	}
-
 	return &users, nil
+}
+
+func (appModel *AppModel) GetUserById(id int) (*User, *app.Error){
+	var user User
+	var userModel *gorm.DB = appModel.DB
+	userModel = userModel.Where("id = ?", id)
+	result := userModel.Find(&user)
+	fmt.Println(result)
+	if result.Error != nil {
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+
+	return &user, nil
+}
+
+func (appModel *AppModel) UpdateUser(request *request.UpdateUserRequest,id int) (*User, *app.Error){
+	if id != 0{
+		var user User
+		var userModel *gorm.DB = appModel.DB.Model(&user)
+		result:= userModel.Where("id = ?", id).UpdateColumns(User{FirstName: request.FirstName, LastName: request.LastName, Email: request.Email})
+		count := result.RowsAffected
+		if result.Error != nil || count == 0{
+			fmt.Println("Checkout")
+			return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+		}
+		return appModel.GetUserById(id)
+	}
+	return nil, nil
+}
+
+func (appModel *AppModel) DeleteUser(id int)  (*User, *app.Error){
+	if id != 0{
+		user, err := appModel.GetUserById(id)
+		if err != nil{
+			return nil, app.NewError(err).SetCode(http.StatusBadRequest)
+		}
+		result := appModel.DB.Where("id=?", id).Delete(&user)
+		count := result.RowsAffected
+		if result.Error != nil || count==0{
+			println("Error Count", count)
+			return nil, app.NewError(result.Error).SetCode(http.StatusBadRequest)
+		}
+		return user, nil
+	}
+	return nil, nil
 }

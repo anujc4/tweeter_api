@@ -8,7 +8,8 @@ import (
 )
 
 type data struct {
-	DB     string `json:"status"`
+	status_code int `json:"status"`
+	check  string `json:"check"`
 	Status string `json:"message"`
 }
 
@@ -19,7 +20,12 @@ type data struct {
 // 1. Server not running due to some error
 // 2. Taking too much time since server is under heacy load
 func (env *HttpApp) SimpleHealthCheck(w http.ResponseWriter, r *http.Request) {
-	app.RenderJSON(w, "UP!")
+	response := data{
+		status_code: 200,
+		check:  "SYSTEM",
+		Status: "ONLINE!",
+	}
+	app.RenderJSON(w, response)
 }
 
 // DetailedHealthCheck responds with a detailed feedback of each system's
@@ -38,10 +44,11 @@ func (env *HttpApp) DetailedHealthCheck(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	//w.WriteHeader(http.StatusOK)
 	response := data{
-		DB:     "ONLINE",
-		Status: "UP!",
+		status_code: 200,
+		check:  "DB",
+		Status: "ONLINE!",
 	}
 
 	app.RenderJSON(w, response)
