@@ -72,16 +72,9 @@ func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var request request.GetUserByIDRequest
-
-	if decodeErr := decoder.Decode(&request, req.Form); decodeErr != nil {
-		app.RenderErrorJSON(w, app.NewError(decodeErr).SetCode(http.StatusBadRequest))
-		return
-	}
-
 	appModel := model.NewAppModel(req.Context(), env.DB)
 
-	user, getUserErr := appModel.GetUserByID(userID, &request)
+	user, getUserErr := appModel.GetUserByID(userID)
 	if getUserErr != nil {
 		app.RenderErrorJSON(w, getUserErr)
 		return
@@ -92,7 +85,6 @@ func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
 
 //UpdateUser method in handler user.go
 func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
 
 	userID, err := getID(req)
 	if err != nil {
@@ -100,14 +92,14 @@ func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var request request.UpdateUserRequest
+	var request request.CreateUserRequest
 	decoder := json.NewDecoder(req.Body)
 	if error := decoder.Decode(&request); error != nil {
 		app.RenderErrorJSON(w, app.NewError(error))
 		return
 	}
 
-	if validateErr := request.ValidateUpdateUserRequest(); validateErr != nil {
+	if validateErr := request.ValidateCreateUserRequest(); validateErr != nil {
 		app.RenderErrorJSON(w, app.NewError(validateErr))
 		return
 	}
@@ -135,8 +127,7 @@ func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// fix response  "User got deleted" maybe??
-	app.RenderJSON(w, "Not yet implemented!")
+	app.RenderJSONwithStatus(w, http.StatusOK, "User got deleted successfully")
 }
 
 func getID(req *http.Request) (uint, error) {

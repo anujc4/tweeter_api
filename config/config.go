@@ -34,14 +34,10 @@ func Initialize() *Configuration {
 // func initMySQL("mysql")
 func setUpViper() {
 
-	// Set the file name of the configurations file
-	viper.SetConfigName("config.toml")
-
 	// Set config file type
 	viper.SetConfigType("toml")
 
-	// Set the path to look for the configurations file
-	viper.AddConfigPath("./config")
+	viper.SetConfigFile("/home/kunal/tweeter_api/config/config.toml")
 
 	// Read the config file
 	err := viper.ReadInConfig()

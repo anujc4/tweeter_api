@@ -85,12 +85,10 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 }
 
 // get user by ID
-func (appModel *AppModel) GetUserByID(userID uint, request *request.GetUserByIDRequest) (*User, *app.Error) {
+func (appModel *AppModel) GetUserByID(userID uint) (*User, *app.Error) {
 	user := User{
-		ID:        userID,
-		FirstName: request.FirstName,
-		LastName:  request.LastName,
-	} // how to fill rest of the details like first_name, last_name and email
+		ID: userID,
+	}
 	result := appModel.DB.First(&user)
 
 	if result.Error != nil {
@@ -102,7 +100,7 @@ func (appModel *AppModel) GetUserByID(userID uint, request *request.GetUserByIDR
 }
 
 // update user by id
-func (appModel *AppModel) UpdateUser(userID uint, request *request.UpdateUserRequest) (*User, *app.Error) {
+func (appModel *AppModel) UpdateUser(userID uint, request *request.CreateUserRequest) (*User, *app.Error) {
 	user := User{
 		ID:        userID,
 		FirstName: request.FirstName,
