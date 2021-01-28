@@ -27,14 +27,19 @@ func routeHandler(env *env.Env) {
 	router.HandleFunc("/detail_health", h.DetailedHealthCheck).Methods("GET")
 
 	router.HandleFunc("/signup", h.CreateUser).Methods("POST")
-	router.HandleFunc("/login", h.Login).Methods("POST")
+	router.HandleFunc("/signin", h.Login).Methods("POST")
 	apiV1.HandleFunc("/logout", h.Logout).Methods("GET")
+
+	apiV1.HandleFunc("/user/{user_id}/tweets", h.GetTweetsByUserID).Methods(http.MethodGet)
+	apiV1.HandleFunc("/user/tweets", h.GetTweetsByUserID).Methods(http.MethodGet)
 
 	// Users API
 	apiV1.HandleFunc("/users", h.GetUsers).Methods("GET")
 	apiV1.HandleFunc("/user/{user_id}", h.GetUserByID).Methods("GET")
 	apiV1.HandleFunc("/user/{user_id}", h.UpdateUser).Methods("PUT")
 	apiV1.HandleFunc("/user/{user_id}", h.DeleteUser).Methods("DELETE")
+
+	apiV1.HandleFunc("/tweet", h.CreateTweet).Methods(http.MethodGet)
 
 	// Tweets
 	// TODO: Implement the h

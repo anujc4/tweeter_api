@@ -141,3 +141,27 @@ func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (env *HttpApp) GetTweetsByUserID(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	var userID uint64
+
+	userID, _ = strconv.ParseUint(vars["user_id"], 10, 0)
+	if userID == 0 {
+		claims, _ := req.Context().Value("claims").(*request.UserSessionClaims)
+		userID = uint64(claims.UserID)
+	}
+
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	user, err := appModel.FindAllTweetsByUser(uint(userID))
+	if err != nil {
+		err = err.SetCode(http.StatusNotFound).
+			SetMessage(fmt.Sprintf("Unable to find user with id %d", userID))
+		app.RenderErrorJSON(w, err)
+		return
+	}
+
+	// Mask the password attribute
+	user.Password = ""
+	app.RenderJSON(w, user)
+}

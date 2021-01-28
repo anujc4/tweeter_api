@@ -18,6 +18,7 @@ type User struct {
 	LastName  string
 	Email     string
 	Password  string
+	Tweets    []Tweet
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -134,4 +135,13 @@ func (appModel *AppModel) UpdateUser(id uint, update *request.UpdateUserRequest)
 func (appModel *AppModel) DeleteUser(id uint) (int64, error) {
 	result := appModel.DB.Delete(&User{}, id)
 	return result.RowsAffected, result.Error
+}
+
+func (appModel *AppModel) FindAllTweetsByUser(userID uint) (*User, *app.Error) {
+	var user User
+	result := appModel.DB.Preload("Tweets").First(&user, userID)
+	if result.Error != nil {
+		return nil, app.NewError(result.Error)
+	}
+	return &user, nil
 }
