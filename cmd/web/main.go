@@ -30,8 +30,8 @@ func routeHandler(handler *handler.HttpApp) {
 
 	// Tweets
 	// TODO: Implement the handler
-	// apiV1.HandleFunc("/tweet", handler.CreateTweet).Methods("POST")
-	// apiV1.HandleFunc("/tweets", handler.GetTweets).Methods("GET")
+	apiV1.HandleFunc("/tweet", handler.CreateTweet).Methods("POST")
+	apiV1.HandleFunc("/tweets", handler.GetTweets).Methods("GET")
 	// apiV1.HandleFunc("/tweet/{tweet_id}", handler.GetTweetByID).Methods("GET")
 	// apiV1.HandleFunc("/tweet/{tweet_id}", handler.UpdateTweet).Methods("PUT")
 	// apiV1.HandleFunc("/tweet/{tweet_id}", handler.UpdateTweet).Methods("DELETE")

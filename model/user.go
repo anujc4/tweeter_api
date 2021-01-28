@@ -60,13 +60,14 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 
 	if request.Page == 0 {
 		page = 1
+	} else {
+		page = request.Page
 	}
 
-	switch {
-	case request.PageSize > 100:
-		pageSize = 100
-	case request.PageSize <= 0:
+	if request.PageSize <= 0 {
 		pageSize = 10
+	} else {
+		pageSize = request.PageSize
 	}
 
 	offset := (page - 1) * pageSize
@@ -81,4 +82,51 @@ func (appModel *AppModel) GetUsers(request *request.GetUsersRequest) (*Users, *a
 	}
 
 	return &users, nil
+}
+
+// get user by ID
+func (appModel *AppModel) GetUserByID(userID uint) (*User, *app.Error) {
+	user := User{
+		ID: userID,
+	}
+	result := appModel.DB.First(&user)
+
+	if result.Error != nil {
+
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+	return &user, nil
+
+}
+
+// update user by id
+func (appModel *AppModel) UpdateUser(userID uint, request *request.CreateUserRequest) (*User, *app.Error) {
+	user := User{
+		ID:        userID,
+		FirstName: request.FirstName,
+		LastName:  request.LastName,
+		Email:     request.Email,
+		Password:  request.Password,
+	}
+
+	result := appModel.DB.Save(&user)
+
+	if result.Error != nil {
+
+		return nil, app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+	return &user, nil
+
+}
+
+// delete user
+func (appModel *AppModel) DeleteUser(userID uint) *app.Error {
+	user := User{
+		ID: userID,
+	}
+	result := appModel.DB.Delete(&user)
+	if result.Error != nil {
+		return app.NewError(result.Error).SetCode(http.StatusNotFound)
+	}
+	return nil
 }

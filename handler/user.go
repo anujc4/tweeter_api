@@ -3,11 +3,13 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/anujc4/tweeter_api/internal/app"
 	"github.com/anujc4/tweeter_api/model"
 	"github.com/anujc4/tweeter_api/request"
 	"github.com/anujc4/tweeter_api/response"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 )
 
@@ -15,6 +17,7 @@ import (
 // meta-data about structs, and an instance can be shared safely.
 var decoder = schema.NewDecoder()
 
+//CreateUser method in handler user.go
 func (env *HttpApp) CreateUser(w http.ResponseWriter, req *http.Request) {
 	var request request.CreateUserRequest
 	decoder := json.NewDecoder(req.Body)
@@ -37,6 +40,7 @@ func (env *HttpApp) CreateUser(w http.ResponseWriter, req *http.Request) {
 	app.RenderJSONwithStatus(w, http.StatusCreated, response.TransformUserResponse(*user))
 }
 
+//GetUsers method in handler user.go
 func (env *HttpApp) GetUsers(w http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
 		app.RenderErrorJSON(w, app.NewParseFormError(err))
@@ -59,17 +63,78 @@ func (env *HttpApp) GetUsers(w http.ResponseWriter, req *http.Request) {
 	app.RenderJSON(w, resp)
 }
 
+//GetUserByID method in handler user.go
 func (env *HttpApp) GetUserByID(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	userID, err := getID(req)
+
+	if err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
+
+	appModel := model.NewAppModel(req.Context(), env.DB)
+
+	user, getUserErr := appModel.GetUserByID(userID)
+	if getUserErr != nil {
+		app.RenderErrorJSON(w, getUserErr)
+		return
+	}
+
+	app.RenderJSONwithStatus(w, http.StatusCreated, response.TransformUserResponse(*user))
 }
 
+//UpdateUser method in handler user.go
 func (env *HttpApp) UpdateUser(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+
+	userID, err := getID(req)
+	if err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
+
+	var request request.CreateUserRequest
+	decoder := json.NewDecoder(req.Body)
+	if error := decoder.Decode(&request); error != nil {
+		app.RenderErrorJSON(w, app.NewError(error))
+		return
+	}
+
+	if validateErr := request.ValidateCreateUserRequest(); validateErr != nil {
+		app.RenderErrorJSON(w, app.NewError(validateErr))
+		return
+	}
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	user, modelErr := appModel.UpdateUser(userID, &request)
+	if modelErr != nil {
+		app.RenderErrorJSON(w, modelErr)
+		return
+	}
+	app.RenderJSONwithStatus(w, http.StatusCreated, response.TransformUserResponse(*user))
+
 }
 
+//DeleteUser method in handler user.go
 func (env *HttpApp) DeleteUser(w http.ResponseWriter, req *http.Request) {
-	// TODO: Implement this
-	app.RenderJSON(w, "Not yet implemented!")
+	userID, err := getID(req)
+	if err != nil {
+		app.RenderErrorJSON(w, app.NewError(err))
+		return
+	}
+	appModel := model.NewAppModel(req.Context(), env.DB)
+	deleteErr := appModel.DeleteUser(userID)
+	if deleteErr != nil {
+		app.RenderErrorJSON(w, deleteErr)
+		return
+	}
+
+	app.RenderJSONwithStatus(w, http.StatusOK, "User got deleted successfully")
+}
+
+func getID(req *http.Request) (uint, error) {
+	params := mux.Vars(req)
+	userID, err := strconv.Atoi(params["user_id"])
+	if err != nil {
+		return uint(userID), err
+	}
+	return uint(userID), nil
 }
