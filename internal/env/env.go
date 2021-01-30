@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-
 	"github.com/anujc4/tweeter_api/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
