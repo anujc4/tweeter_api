@@ -2,12 +2,13 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
-	"os"
+	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -33,61 +34,61 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
-func createUser(firstName, lastName, email, password string) int64 {
+func createUser(firstName, lastName, email, password string) (int64, error) {
 	query := "INSERT INTO users (first_name, last_name, email, password) VALUES(?, ?, ?, ?);"
 	statement, err := db.Prepare(query)
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 	resp, err := statement.Exec(firstName, lastName, email, password)
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 
 	id, err := resp.LastInsertId()
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
-	return id
+	return id, nil
 }
 
-func deleteUser(id int64) int64 {
+func deleteUser(id int64) (int64, error) {
 	query := "DELETE FROM users WHERE id = ?;"
 	statement, err := db.Prepare(query)
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 	resp, err := statement.Exec(id)
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 
 	id, err = resp.RowsAffected()
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
-	return id
+	return id, err
 }
 
-func updateUserName(id int64, firstName, lastName string) int64 {
+func updateUserName(id int64, firstName, lastName string) (int64, error) {
 	query := "UPDATE users SET first_name = ?, last_name = ? WHERE id = ?;"
 	statement, err := db.Prepare(query)
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 	resp, err := statement.Exec(firstName, lastName, id)
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 
 	id, err = resp.RowsAffected()
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
-	return id
+	return id, nil
 }
 
-func getUserByID(id int64) User {
+func getUserByID(id int64) (User, error) {
 	var user User
 	query := "SELECT id, first_name, last_name, email, created_at, updated_at FROM users WHERE id = ?;"
 
@@ -99,18 +100,18 @@ func getUserByID(id int64) User {
 		&user.Email,
 		&user.CreatedAt,
 		&user.UpdatedAt); err != nil {
-		log.Panic(err)
+		return user, err
 	}
-	return user
+	return user, nil
 }
 
-func getAllUsers() []User {
+func getAllUsers() ([]User, error) {
 	var users []User
 	query := "SELECT id, first_name, last_name, email, created_at, updated_at FROM users;"
 
 	rows, err := db.Query(query)
 	if err != nil {
-		log.Panic(err)
+		return nil, err
 	}
 
 	defer rows.Close()
@@ -124,11 +125,92 @@ func getAllUsers() []User {
 			&user.CreatedAt,
 			&user.UpdatedAt)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		users = append(users, user)
 	}
-	return users
+	return users, nil
+}
+
+func healthCheck(c *gin.Context) {
+	c.String(200, "UP")
+}
+
+func create(c *gin.Context) {
+	var user User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	id, err := createUser(user.FirstName, user.LastName, user.Email, user.Password)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.String(200, fmt.Sprint(id))
+}
+
+func read(c *gin.Context) {
+	users, err := getAllUsers()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
+}
+
+func update(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	rows, err := updateUserName(int64(id), user.FirstName, user.LastName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if rows > 0 {
+		user, err := getUserByID(int64(id))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, user)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	}
+}
+
+func delete(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	rows, err := deleteUser(int64(id))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if rows > 0 {
+		c.Status(http.StatusNoContent)
+		return
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Unable to find user with id %d", id)})
+		return
+	}
 }
 
 func main() {
@@ -142,64 +224,14 @@ func main() {
 	}
 	fmt.Print("Established contact with database")
 
-	fmt.Println("sql demo application.")
-	for true {
-		fmt.Print("1. Insert\n2. Update\n3. Get by ID\n4. Delete User by ID.\n5. Print All.\n6. Exit.\nEnter your choice: ")
-		var choice int
-		fmt.Scanln(&choice)
-		switch choice {
-		case 1:
-			var firstName, lastName, email, password string
-			fmt.Print("Insert first name: ")
-			fmt.Scanln(&firstName)
-			fmt.Print("Insert last name: ")
-			fmt.Scanln(&lastName)
-			fmt.Print("Insert email: ")
-			fmt.Scanln(&email)
-			fmt.Print("Insert password: ")
-			fmt.Scanln(&password)
-			id := createUser(firstName, lastName, email, password)
-			fmt.Printf("User created with id: %d\n", id)
-		case 2:
-			var firstName, lastName string
-			var id int64
-			fmt.Print("Input the id of the user to update: ")
-			fmt.Scanln(&id)
-			fmt.Print("Insert first name: ")
-			fmt.Scanln(&firstName)
-			fmt.Print("Insert last name: ")
-			fmt.Scanln(&lastName)
-			rows := updateUserName(id, firstName, lastName)
-			if rows > 0 {
-				fmt.Println("User has been updated.")
-			} else {
-				fmt.Println("No user was updated.")
-			}
-		case 3:
-			var id int64
-			fmt.Print("Input the id of the user to find: ")
-			fmt.Scanln(&id)
-			user := getUserByID(id)
-			enc, _ := json.Marshal(user)
-			fmt.Println(string(enc))
-		case 4:
-			var id int64
-			fmt.Print("Input the id of the user to delete: ")
-			fmt.Scanln(&id)
-			rows := deleteUser(id)
-			if rows > 0 {
-				fmt.Println("User has been deleted.")
-			}
-		case 5:
-			users := getAllUsers()
-			for _, u := range users {
-				enc, _ := json.Marshal(u)
-				fmt.Println(string(enc))
-			}
-		case 6:
-			fmt.Println("Exiting....")
-			os.Exit(0)
-		default:
-		}
-	}
+	r := gin.Default()
+	r.GET("/simple_health", healthCheck)
+
+	v1 := r.Group("/v1")
+	v1.POST("/user", create)
+	v1.GET("/users", read)
+	v1.PUT("/user/:id", update)
+	v1.DELETE("/user/:id", delete)
+
+	r.Run(":3000")
 }
