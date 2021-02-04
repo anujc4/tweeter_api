@@ -1,0 +1,24 @@
+[Unit]
+Description=Tweeter API
+ConditionPathExists=/home/ubuntu/tweeter_api/setup.sh
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+Environment=GOPATH=/home/ubuntu/go
+Environment=GOROOT=/usr/local/go
+WorkingDirectory=/home/ubuntu/tweeter_api
+ExecStart=/home/ubuntu/tweeter_api/bin/application
+
+# Make sure log directory exists and owned by syslog
+PermissionsStartOnly=true
+ExecStartPre=/bin/mkdir -p /var/log/tweeter
+ExecStartPre=/bin/chown syslog:adm /var/log/tweeter
+ExecStartPre=/bin/chmod 755 /var/log/tweeter
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=tweeter
+
+[Install]
+WantedBy=multi-user.target
