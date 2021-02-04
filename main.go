@@ -34,23 +34,101 @@ type User struct {
 }
 
 func createUser(firstName, lastName, email, password string) int64 {
-	return 0
+	query := "INSERT INTO users (first_name, last_name, email, password) VALUES(?, ?, ?, ?);"
+	statement, err := db.Prepare(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	resp, err := statement.Exec(firstName, lastName, email, password)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	id, err := resp.LastInsertId()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return id
 }
 
 func deleteUser(id int64) int64 {
-	return 0
+	query := "DELETE FROM users WHERE id = ?;"
+	statement, err := db.Prepare(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	resp, err := statement.Exec(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	id, err = resp.RowsAffected()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return id
 }
 
 func updateUserName(id int64, firstName, lastName string) int64 {
-	return 0
+	query := "UPDATE users SET first_name = ?, last_name = ? WHERE id = ?;"
+	statement, err := db.Prepare(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	resp, err := statement.Exec(firstName, lastName, id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	id, err = resp.RowsAffected()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return id
 }
 
 func getUserByID(id int64) User {
-	return User{}
+	var user User
+	query := "SELECT id, first_name, last_name, email, created_at, updated_at FROM users WHERE id = ?;"
+
+	row := db.QueryRow(query, id)
+	if err := row.Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.CreatedAt,
+		&user.UpdatedAt); err != nil {
+		log.Panic(err)
+	}
+	return user
 }
 
 func getAllUsers() []User {
-	return nil
+	var users []User
+	query := "SELECT id, first_name, last_name, email, created_at, updated_at FROM users;"
+
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var user User
+		err := rows.Scan(
+			&user.ID,
+			&user.FirstName,
+			&user.LastName,
+			&user.Email,
+			&user.CreatedAt,
+			&user.UpdatedAt)
+		if err != nil {
+			log.Fatal(err)
+		}
+		users = append(users, user)
+	}
+	return users
 }
 
 func main() {
